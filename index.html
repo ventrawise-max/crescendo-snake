@@ -10211,6 +10211,10 @@ function gameOver(){
 
   function _showGameOver(playerName){
     if(isNewHS && score>0) saveHighScore(activeGenreKey(),diffId,score,playerName||'PLAYER');
+    // Push personal bests to the GLOBAL leaderboard (script 2, Firestore)
+    if(score>0 && (isNewBest||isNewHS) && window.submitGlobalScore){
+      window.submitGlobalScore(playerName||'PLAYER',score,activeGenreKey(),diffId);
+    }
     const hsEntry=getHighScore(activeGenreKey(),diffId);
     const hsLine=hsEntry?`<br><span style="color:#ffd700;font-family:'Teko',sans-serif;font-size:11px;letter-spacing:.06em">🏆 ${diffId.toUpperCase()} BEST: ${hsEntry.score} — ${hsEntry.name} · ${hsEntry.date} ${hsEntry.time}</span>`:'';
     const title=isNewHS&&score>0?'NEW RECORD! 🏆':isNewBest?'NEW BEST!':'GAME OVER';
@@ -12482,7 +12486,54 @@ setTimeout(()=>{
     document.getElementById('colClose').onclick=()=>{ try{document.body.removeChild(ov);}catch(e){} };
   };
 
-  // ── RECORDS MODAL (ALL-TIME + WEEKLY tabs) ──
+  // ── GLOBAL LEADERBOARD — Firestore REST API, no SDK needed ──
+  // The apiKey is a public project identifier (not a secret); Firestore
+  // security rules are what protect the data.
+  const _FB={key:'AIzaSyCgOhEogVklqJBYcNUUOMdx9Jfr60uGlz8',proj:'crescendo-snake'};
+  window.submitGlobalScore=function(name,score,genre,diff){
+    try{
+      score=Math.floor(Number(score)||0);
+      if(score<100) return; // don't spam the board with tiny runs
+      fetch('https://firestore.googleapis.com/v1/projects/'+_FB.proj+'/databases/(default)/documents/scores?key='+_FB.key,{
+        method:'POST',headers:{'Content-Type':'application/json'},
+        body:JSON.stringify({fields:{
+          name:{stringValue:String(name||'PLAYER').slice(0,14)},
+          score:{integerValue:String(score)},
+          genre:{stringValue:String(genre||'').slice(0,12)},
+          diff:{stringValue:String(diff||'').slice(0,10)},
+          ts:{integerValue:String(Date.now())}
+        }})
+      }).catch(()=>{});
+    }catch(e){}
+  };
+  window.fetchGlobalTop=function(cb){
+    fetch('https://firestore.googleapis.com/v1/projects/'+_FB.proj+'/databases/(default)/documents:runQuery?key='+_FB.key,{
+      method:'POST',headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({structuredQuery:{
+        from:[{collectionId:'scores'}],
+        orderBy:[{field:{fieldPath:'score'},direction:'DESCENDING'}],
+        limit:100
+      }})
+    }).then(r=>r.json()).then(rows=>{
+      const out=[];
+      (rows||[]).forEach(r2=>{
+        const f=r2.document&&r2.document.fields; if(!f) return;
+        out.push({
+          name:f.name?f.name.stringValue:'?',
+          score:Number(f.score?f.score.integerValue:0),
+          genre:f.genre?f.genre.stringValue:'',
+          diff:f.diff?f.diff.stringValue:'',
+          date:f.ts?new Date(Number(f.ts.integerValue)).toLocaleDateString():''
+        });
+      });
+      // one entry per player name — keep their best
+      const best={};
+      out.forEach(e=>{ if(!best[e.name]||e.score>best[e.name].score) best[e.name]=e; });
+      cb(Object.values(best).sort((a,b)=>b.score-a.score).slice(0,50));
+    }).catch(()=>cb(null));
+  };
+
+  // ── RECORDS MODAL (ALL-TIME + WEEKLY + GLOBAL tabs) ──
   window.showRecordsModal=function(){
     const genreNames={metal:'METAL',hiphop:'HIP HOP',pop:'POP',classical:'CLASSICAL',electronic:'ELECTRONIC',country:'COUNTRY',meditation:'MEDITATION'};
     const diffNames={easy:'EASY',medium:'MEDIUM',hard:'HARD',hardcore:'HARDCORE'};
@@ -12524,23 +12575,37 @@ setTimeout(()=>{
       <div style="display:flex;gap:8px;margin-bottom:14px">
         <button id="recTabAll" style="font-family:'Teko',sans-serif;font-weight:700;font-size:12px;letter-spacing:.15em;padding:6px 16px;border-radius:6px;cursor:pointer;border:1px solid #ff5533;background:rgba(255,68,0,.25);color:#fff">ALL-TIME</button>
         <button id="recTabWeek" style="font-family:'Teko',sans-serif;font-weight:700;font-size:12px;letter-spacing:.15em;padding:6px 16px;border-radius:6px;cursor:pointer;border:1px solid rgba(255,255,255,.2);background:rgba(255,255,255,.05);color:#999">THIS WEEK</button>
+        <button id="recTabGlobal" style="font-family:'Teko',sans-serif;font-weight:700;font-size:12px;letter-spacing:.15em;padding:6px 16px;border-radius:6px;cursor:pointer;border:1px solid rgba(255,255,255,.2);background:rgba(255,255,255,.05);color:#999">🌍 GLOBAL</button>
       </div>
       <div id="recRows" style="width:100%;max-width:360px">${renderRows(board)}</div>
       <button id="recClose" style="margin-top:18px;font-family:'Teko','Arial Black',sans-serif;font-weight:700;font-size:16px;letter-spacing:.15em;padding:9px 30px;border:none;border-radius:5px;background:linear-gradient(180deg,#cc2200,#880000);color:#fff;cursor:pointer">← BACK</button>
     `;
     document.body.appendChild(ov);
-    const tabAll=document.getElementById('recTabAll'), tabWeek=document.getElementById('recTabWeek'), rowsEl=document.getElementById('recRows');
+    const tabAll=document.getElementById('recTabAll'), tabWeek=document.getElementById('recTabWeek'), tabGlobal=document.getElementById('recTabGlobal'), rowsEl=document.getElementById('recRows');
     function styleTab(btn,on){
       btn.style.border=on?'1px solid #ff5533':'1px solid rgba(255,255,255,.2)';
       btn.style.background=on?'rgba(255,68,0,.25)':'rgba(255,255,255,.05)';
       btn.style.color=on?'#fff':'#999';
     }
+    let _globalCache=null;
     function setTab(active){
-      styleTab(tabAll,active==='all'); styleTab(tabWeek,active==='week');
+      styleTab(tabAll,active==='all'); styleTab(tabWeek,active==='week'); styleTab(tabGlobal,active==='global');
+      if(active==='global'){
+        if(_globalCache){ rowsEl.innerHTML=renderRows(_globalCache); return; }
+        rowsEl.innerHTML='<div style="font-family:\'Teko\',sans-serif;color:#888;text-align:center;padding:20px">Loading world records… 🌍</div>';
+        window.fetchGlobalTop(list=>{
+          if(!document.body.contains(rowsEl)) return; // modal was closed
+          if(!list){ rowsEl.innerHTML='<div style="font-family:\'Teko\',sans-serif;color:#c66;text-align:center;padding:20px">Couldn\\'t reach the leaderboard.<br>Check your connection and try again.</div>'; return; }
+          _globalCache=list;
+          rowsEl.innerHTML=renderRows(list);
+        });
+        return;
+      }
       rowsEl.innerHTML=renderRows(active==='all'?board:weeklyBoard);
     }
     tabAll.onclick=()=>setTab('all');
     tabWeek.onclick=()=>setTab('week');
+    tabGlobal.onclick=()=>setTab('global');
     document.getElementById('recClose').onclick=()=>{ try{document.body.removeChild(ov);}catch(e){} };
   };
 
