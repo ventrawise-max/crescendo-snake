@@ -11720,28 +11720,71 @@ function draw(now){
     if(typeof drawPUIcon==='function' && ['ice','scissors','star','gem','skull','chili','shock','safe'].includes(pu.id)){ drawPUIcon(pu.id,px2,py2,GRID*(pu.isKill?1.25:1.15)); } else { drawEmoji(pu.emoji,px2,py2,GRID*(pu.isKill?1.1:1.0)); }
   });
 
-  // snake
+  // ── SNAKE — NEON PULSE (owner-picked style B) ──
+  // Connected glowing spine, per-segment energy cores with a light pulse
+  // traveling head→tail, streamlined head with glowing visor eyes + crown fin.
   const len=snake.length;
-  for(let i=len-1;i>=0;i--){
-    const s=snake[i],t=1-i/len,x=s.x*GRID+GRID/2,y=s.y*GRID+GRID/2,r=(GRID/2.15)*(.5+.5*t);
+  const skin=window.getActiveSkinColors?window.getActiveSkinColors():null;
+  const headC=skin?skin.head:g.headCol;
+  const b0=skin?skin.body[0]:g.snakeCol[0];
+  const b1=skin?skin.body[1]:(g.snakeCol[1]||g.accent2);
+  const multGlow=runMult>1?Math.min((runMult-1)*18,40):0;
+  const ghostAlpha=ghostActive?(Math.floor(performance.now()/120)%2===0?.22:.75):1;
+  // glow spine connecting all segments
+  if(len>1){
     ctx.save();
-    // Ghost: flash opacity so player knows they're invincible
-    if(ghostActive){
-      const flashRate=Math.floor(performance.now()/120)%2; // fast flash
-      ctx.globalAlpha=flashRate===0?.22:.75;
-    }
-    // Use active skin if available, else genre default
-    const skin=window.getActiveSkinColors?window.getActiveSkinColors():null;
-    const headC=skin?skin.head:g.headCol;
-    const b0=skin?skin.body[0]:g.snakeCol[0];
-    const b1=skin?skin.body[1]:(g.snakeCol[1]||g.accent2);
+    ctx.globalAlpha=0.28*ghostAlpha;
+    ctx.strokeStyle=b0; ctx.lineWidth=GRID*0.7; ctx.lineCap='round'; ctx.lineJoin='round';
+    ctx.shadowBlur=16+multGlow; ctx.shadowColor=runMult>1?`rgba(255,${180+multGlow*2},0,0.9)`:b0;
+    ctx.beginPath();
+    ctx.moveTo(snake[0].x*GRID+GRID/2,snake[0].y*GRID+GRID/2);
+    for(let i=1;i<len;i++) ctx.lineTo(snake[i].x*GRID+GRID/2,snake[i].y*GRID+GRID/2);
+    ctx.stroke();
+    ctx.restore();
+  }
+  for(let i=len-1;i>=0;i--){
+    const s=snake[i],t=1-i/len,x=s.x*GRID+GRID/2,y=s.y*GRID+GRID/2,r=(GRID/2.15)*(.55+.45*t);
+    ctx.save();
+    ctx.globalAlpha=ghostAlpha;
     const bodyC=skin&&skin.rainbow?`hsl(${(i*15+performance.now()*.05)%360},100%,60%)`:feverActive?`hsl(${(i*8+performance.now()*.12)%60+10},100%,60%)`:lerpC(b0,b1,t);
-    // Run multiplier glow: each gem collected adds golden shimmer to body
-    const multGlow=runMult>1?Math.min((runMult-1)*18,40):0;
-    const glowBase=14*t+2+multGlow;
-    ctx.shadowBlur=glowBase; ctx.shadowColor=i===0?(skin?skin.head:g.accent2):(runMult>1?`rgba(255,${180+multGlow*2},0,0.9)`:b0);
-    ctx.fillStyle=i===0?headC:bodyC;
-    ctx.beginPath(); ctx.roundRect(x-r,y-r,r*2,r*2,r*.55); ctx.fill();
+    if(i===0){
+      // ── HEAD: streamlined teardrop pointing in the travel direction ──
+      const ha=Math.atan2(dir.y,dir.x);
+      ctx.translate(x,y); ctx.rotate(ha);
+      const hs=GRID/22; // scale factor relative to design grid
+      ctx.shadowBlur=18+multGlow; ctx.shadowColor=headC;
+      ctx.fillStyle=headC;
+      ctx.beginPath();
+      ctx.moveTo(15*hs,0);
+      ctx.quadraticCurveTo(12*hs,-10*hs,-2*hs,-9*hs);
+      ctx.quadraticCurveTo(-10*hs,-6*hs,-10*hs,0);
+      ctx.quadraticCurveTo(-10*hs,6*hs,-2*hs,9*hs);
+      ctx.quadraticCurveTo(12*hs,10*hs,15*hs,0);
+      ctx.closePath(); ctx.fill();
+      ctx.shadowBlur=0;
+      // dark visor
+      ctx.fillStyle='#1a0a00';
+      ctx.beginPath();
+      ctx.moveTo(11*hs,-4.4*hs); ctx.lineTo(1*hs,-6*hs); ctx.lineTo(1*hs,6*hs); ctx.lineTo(11*hs,4.4*hs);
+      ctx.closePath(); ctx.fill();
+      // glowing visor eye bars
+      ctx.fillStyle=`rgba(120,255,255,${(0.7+0.3*Math.sin(now*.006)).toFixed(2)})`;
+      ctx.fillRect(2*hs,-4.4*hs,8*hs,3*hs); ctx.fillRect(2*hs,1.4*hs,8*hs,3*hs);
+      // gold crown fin
+      ctx.fillStyle='#ffd24a';
+      ctx.beginPath(); ctx.moveTo(-6*hs,-8*hs); ctx.lineTo(-1*hs,-13.5*hs); ctx.lineTo(2*hs,-8.5*hs); ctx.closePath(); ctx.fill();
+      ctx.rotate(-ha); ctx.translate(-x,-y);
+    } else {
+      // ── BODY: energy segment with traveling light pulse ──
+      const pulse=Math.pow(Math.max(0,Math.sin(now*.005-(i/len)*6.28)),3);
+      ctx.shadowBlur=8*t+2+multGlow;
+      ctx.shadowColor=runMult>1?`rgba(255,${180+multGlow*2},0,0.9)`:b0;
+      ctx.fillStyle=bodyC;
+      ctx.beginPath(); ctx.arc(x,y,r,0,Math.PI*2); ctx.fill();
+      ctx.shadowBlur=0;
+      ctx.fillStyle=`rgba(255,255,220,${(0.3+pulse*0.65).toFixed(2)})`;
+      ctx.beginPath(); ctx.arc(x,y,r*(0.32+pulse*0.3),0,Math.PI*2); ctx.fill();
+    }
     ctx.restore();
     // ── FIRE EFFECT: draw flame tongues on every segment when combo >= 8 ──
     if(combo>=8){
