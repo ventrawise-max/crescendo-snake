@@ -399,6 +399,9 @@ canvas{display:block;border-radius:9px;background:#0a0408;max-width:100%;max-hei
   <!-- World records teaser — populated from the global leaderboard -->
   <div id="titleWorldRecords" style="display:none;z-index:2;width:min(280px,84vw);background:rgba(20,8,10,.75);border:1px solid rgba(255,140,60,.3);border-radius:12px;padding:10px 14px;margin:0 0 10px;cursor:pointer;-webkit-tap-highlight-color:transparent"></div>
 
+  <!-- Daily spin — one free coin spin per day -->
+  <button id="dailySpinBtn" onclick="window.showDailySpin&&window.showDailySpin()" style="z-index:2;font-family:'Teko','Arial Black',sans-serif;font-weight:700;font-size:14px;letter-spacing:.14em;padding:8px 22px;margin:0 0 10px;border-radius:9px;border:1px solid rgba(255,210,74,.5);background:rgba(60,40,8,.6);color:#ffd24a;cursor:pointer;-webkit-tap-highlight-color:transparent">🎡 DAILY SPIN</button>
+
   <!-- CTA button -->
   <button id="letsRockBtn" style="
     font-family:'Metal Mania','Arial Black',sans-serif;font-size:clamp(24px,7.5vw,38px);
@@ -12549,6 +12552,79 @@ setTimeout(()=>{
       cb(Object.values(best).sort((a,b)=>b.score-a.score).slice(0,50));
     }).catch(()=>cb(null));
   };
+
+  // ── DAILY SPIN — one free coin spin per day (Wheel of Mild Fortune) ──
+  function spinAvailable(){ return localStorage.getItem('cs_spinDay')!==new Date().toDateString(); }
+  function refreshSpinBtn(){
+    const b=document.getElementById('dailySpinBtn'); if(!b) return;
+    if(spinAvailable()){ b.innerHTML='🎡 DAILY SPIN · <span style="color:#7dff5a">FREE</span>'; b.disabled=false; b.style.opacity='1'; }
+    else { b.innerHTML='🎡 SPUN — BACK TOMORROW'; b.disabled=true; b.style.opacity='.45'; }
+  }
+  window.refreshSpinBtn=refreshSpinBtn;
+  window.showDailySpin=function(){
+    if(!spinAvailable()) return;
+    const SLICES=[50,75,100,150,75,200,100,500];
+    const WEIGHTS=[16,14,12,9,14,7,12,3];
+    const COLS=['#3a2408','#552e0a','#3a2408','#6a3a0c','#3a2408','#7a4610','#3a2408','#8a1a2a'];
+    // pick the prize up front (weighted), then animate the wheel to it
+    let tot=0; WEIGHTS.forEach(w=>tot+=w);
+    let roll=Math.random()*tot, target=0;
+    for(let i=0;i<WEIGHTS.length;i++){ roll-=WEIGHTS[i]; if(roll<=0){ target=i; break; } }
+    const ov=document.createElement('div');
+    ov.style.cssText='position:fixed;inset:0;z-index:9800;background:rgba(5,2,8,.95);display:flex;flex-direction:column;align-items:center;justify-content:center;padding:24px;';
+    ov.innerHTML='<div style="font-family:\'Metal Mania\',\'Arial Black\',sans-serif;font-size:26px;color:#fff;text-shadow:0 0 16px #ffaa00;letter-spacing:.05em;margin-bottom:2px">WHEEL OF MILD FORTUNE</div>'
+      +'<div style="font-family:\'Teko\',sans-serif;font-size:12px;letter-spacing:.2em;color:#886644;margin-bottom:14px">ONE FREE SPIN A DAY. THE SNAKE INSISTS.</div>'
+      +'<div style="position:relative;width:250px;height:250px">'
+      +'<canvas id="spinWheel" width="250" height="250"></canvas>'
+      +'<div style="position:absolute;top:-6px;left:50%;transform:translateX(-50%);width:0;height:0;border-left:11px solid transparent;border-right:11px solid transparent;border-top:18px solid #ffd24a;filter:drop-shadow(0 2px 3px rgba(0,0,0,.6))"></div>'
+      +'</div>'
+      +'<div id="spinResult" style="min-height:34px;font-family:\'Metal Mania\',sans-serif;font-size:24px;color:#ffd24a;text-shadow:0 0 14px #ffaa00;margin-top:12px"></div>'
+      +'<button id="spinGo" style="font-family:\'Teko\',\'Arial Black\',sans-serif;font-weight:700;font-size:20px;letter-spacing:.12em;padding:12px 46px;margin-top:8px;border:none;border-radius:9px;background:linear-gradient(180deg,#f6d98a,#caa033);color:#3a1500;box-shadow:0 4px 0 #5a3410;cursor:pointer;-webkit-tap-highlight-color:transparent">SPIN 🎡</button>';
+    document.body.appendChild(ov);
+    const cv=document.getElementById('spinWheel'), c2=cv.getContext('2d');
+    const N=SLICES.length, SEG=Math.PI*2/N;
+    function drawWheel(rot){
+      c2.clearRect(0,0,250,250); c2.save(); c2.translate(125,125); c2.rotate(rot);
+      for(let i=0;i<N;i++){
+        c2.beginPath(); c2.moveTo(0,0); c2.arc(0,0,116,i*SEG,(i+1)*SEG); c2.closePath();
+        c2.fillStyle=COLS[i]; c2.fill();
+        c2.strokeStyle='rgba(255,210,74,.35)'; c2.lineWidth=1.5; c2.stroke();
+        c2.save(); c2.rotate(i*SEG+SEG/2);
+        c2.fillStyle=SLICES[i]===500?'#ff6a8a':'#ffd24a';
+        c2.font='bold 17px Teko,Arial'; c2.textAlign='right';
+        c2.fillText(SLICES[i]+'🪙',104,6);
+        c2.restore();
+      }
+      c2.beginPath(); c2.arc(0,0,26,0,7); c2.fillStyle='#1a0f08'; c2.fill();
+      c2.strokeStyle='#ffd24a'; c2.lineWidth=2; c2.stroke();
+      c2.fillStyle='#ffd24a'; c2.font='16px serif'; c2.textAlign='center'; c2.fillText('🐍',0,6);
+      c2.restore();
+    }
+    drawWheel(0);
+    let spinning=false;
+    document.getElementById('spinGo').onclick=function(){
+      if(spinning) return; spinning=true;
+      this.style.opacity='.4';
+      localStorage.setItem('cs_spinDay',new Date().toDateString());
+      // land the target slice centre under the top pointer (pointer = -90deg)
+      const finalRot=Math.PI*2*6 + (-Math.PI/2 - (target*SEG+SEG/2));
+      const dur=3800, t0=performance.now();
+      (function anim(now){
+        const t=Math.min(1,(now-t0)/dur);
+        const ease=1-Math.pow(1-t,3);
+        drawWheel(finalRot*ease);
+        if(t<1){ requestAnimationFrame(anim); return; }
+        const prize=SLICES[target];
+        CS.addCoins(prize);
+        try{ navigator.vibrate&&navigator.vibrate([20,30,20,30,60]); }catch(e){}
+        document.getElementById('spinResult').textContent='+'+prize+' 🪙'+(prize===500?' JACKPOT!!':prize>=200?' NICE!':'');
+        const go=document.getElementById('spinGo');
+        go.textContent='COLLECT'; go.style.opacity='1'; spinning=false;
+        go.onclick=function(){ try{document.body.removeChild(ov);}catch(e){} refreshSpinBtn(); };
+      })(t0);
+    };
+  };
+  refreshSpinBtn();
 
   // ── WORLD RANK — shown on the game-over screen after a submitted PB ──
   window.showWorldRank=function(score){
