@@ -387,6 +387,9 @@ canvas{display:block;border-radius:9px;background:#0a0408;max-width:100%;max-hei
   <!-- Tagline -->
   <p style="font-family:'Teko',sans-serif;font-size:11px;letter-spacing:.4em;color:#664444;text-transform:uppercase;margin:0 0 10px;z-index:2">6 Genres · Bosses · Music · Snake</p>
 
+  <!-- World records teaser — populated from the global leaderboard -->
+  <div id="titleWorldRecords" style="display:none;z-index:2;width:min(280px,84vw);background:rgba(20,8,10,.75);border:1px solid rgba(255,140,60,.3);border-radius:12px;padding:10px 14px;margin:0 0 10px;cursor:pointer;-webkit-tap-highlight-color:transparent"></div>
+
   <!-- CTA button -->
   <button id="letsRockBtn" style="
     font-family:'Metal Mania','Arial Black',sans-serif;font-size:clamp(24px,7.5vw,38px);
@@ -1971,6 +1974,7 @@ window.diffBackToGenre=function(){
   if(typeof refreshGenreLocks==='function') refreshGenreLocks();
 };
 window.genreBackToTitle=function(){
+  if(window.refreshTitleRecords) window.refreshTitleRecords();
   if(typeof goBackToGender==='function'){ goBackToGender(); return; }
   var g=document.getElementById('genreScreen'); if(g) g.style.display='none';
   var t=document.getElementById('genderScreen'); if(t) t.style.display='flex';
@@ -12540,6 +12544,7 @@ setTimeout(()=>{
           score:Number(f.score?f.score.integerValue:0),
           genre:f.genre?f.genre.stringValue:'',
           diff:f.diff?f.diff.stringValue:'',
+          ts:f.ts?Number(f.ts.integerValue):0,
           date:f.ts?new Date(Number(f.ts.integerValue)).toLocaleDateString():''
         });
       });
@@ -12550,8 +12555,37 @@ setTimeout(()=>{
     }).catch(()=>cb(null));
   };
 
+  // ── TITLE-SCREEN WORLD RECORDS TEASER ──
+  // Shows the global top 3 + this week's best on the main page, so players
+  // see live competition the moment they open the game. Tap = full board.
+  window.refreshTitleRecords=function(){
+    const el=document.getElementById('titleWorldRecords'); if(!el) return;
+    window.fetchGlobalTop(function(list){
+      if(!list||!list.length){ el.style.display='none'; return; }
+      const medal=['🥇','🥈','🥉'];
+      let rows='<div style="font-family:\'Teko\',sans-serif;font-size:12px;letter-spacing:.18em;color:#ff9955;text-align:center;margin-bottom:6px">🌍 WORLD RECORDS</div>';
+      list.slice(0,3).forEach(function(e,i){
+        rows+='<div style="display:flex;justify-content:space-between;align-items:center;font-family:\'Teko\',sans-serif;font-size:14px;padding:1.5px 0">'
+          +'<span style="color:#ddd">'+medal[i]+' '+e.name+'</span>'
+          +'<span style="color:#ffd24a;font-weight:700">'+e.score.toLocaleString()+'</span></div>';
+      });
+      const wk=Date.now()-7*864e5;
+      const weekBest=list.filter(function(e){return e.ts>=wk;}).sort(function(a,b){return b.score-a.score;})[0];
+      if(weekBest){
+        rows+='<div style="display:flex;justify-content:space-between;align-items:center;font-family:\'Teko\',sans-serif;font-size:13px;border-top:1px solid rgba(255,140,60,.2);margin-top:5px;padding-top:5px">'
+          +'<span style="color:#ff8855">🔥 THIS WEEK: <span style="color:#ddd">'+weekBest.name+'</span></span>'
+          +'<span style="color:#ffd24a;font-weight:700">'+weekBest.score.toLocaleString()+'</span></div>';
+      }
+      rows+='<div style="font-family:\'Teko\',sans-serif;font-size:10px;letter-spacing:.14em;color:#775544;text-align:center;margin-top:5px">CAN YOU BEAT THEM? · TAP FOR MORE</div>';
+      el.innerHTML=rows;
+      el.style.display='block';
+      el.onclick=function(){ if(window.showRecordsModal) window.showRecordsModal('global'); };
+    });
+  };
+  window.refreshTitleRecords();
+
   // ── RECORDS MODAL (ALL-TIME + WEEKLY + GLOBAL tabs) ──
-  window.showRecordsModal=function(){
+  window.showRecordsModal=function(initialTab){
     const genreNames={metal:'METAL',hiphop:'HIP HOP',pop:'POP',classical:'CLASSICAL',electronic:'ELECTRONIC',country:'COUNTRY',meditation:'MEDITATION'};
     const diffNames={easy:'EASY',medium:'MEDIUM',hard:'HARD',hardcore:'HARDCORE'};
     function renderRows(board){
@@ -12623,6 +12657,7 @@ setTimeout(()=>{
     tabAll.onclick=()=>setTab('all');
     tabWeek.onclick=()=>setTab('week');
     tabGlobal.onclick=()=>setTab('global');
+    if(initialTab==='global') setTab('global'); // title-screen teaser jumps straight to the world board
     document.getElementById('recClose').onclick=()=>{ try{document.body.removeChild(ov);}catch(e){} };
   };
 
