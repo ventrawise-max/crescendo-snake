@@ -7344,47 +7344,47 @@ function drawBossPixel(ctx,x,y,genre,idx,hpPct,frame){
 const TROPHIES=[
   // ── SCORE MILESTONES ──
   {id:'score_100',   icon:'⭐',name:'Century',            desc:'Score 100 points',             diff:null, check:s=>s.score>=100},
-  {id:'score_250',   icon:'🔥',name:'On Fire',            desc:'Score 250 points',             diff:null, check:s=>s.score>=250},
-  {id:'score_500',   icon:'💫',name:'Half Grand',         desc:'Score 500 points',             diff:null, check:s=>s.score>=500},
-  {id:'score_1000',  icon:'🌟',name:'One Grand',          desc:'Score 1000 points',            diff:null, check:s=>s.score>=1000},
-  {id:'score_2500',  icon:'💥',name:'High Roller',        desc:'Score 2500 points',            diff:null, check:s=>s.score>=2500},
-  {id:'score_5000',  icon:'🏅',name:'Legend',             desc:'Score 5000 points',            diff:null, check:s=>s.score>=5000},
-  {id:'score_10000', icon:'👑',name:'10K Club',           desc:'Score 10,000 points',          diff:null, check:s=>s.score>=10000},
-  {id:'score_25000', icon:'💎',name:'Diamond Score',      desc:'Score 25,000 points',          diff:null, check:s=>s.score>=25000},
-  {id:'score_50000', icon:'🌈',name:'God Tier',           desc:'Score 50,000 points',          diff:null, check:s=>s.score>=50000},
+  {id:'score_250',   icon:'🔥',name:'On Fire',            desc:'Score 1,000 points',           diff:null, check:s=>s.score>=1000},
+  {id:'score_500',   icon:'💫',name:'Rising Star',        desc:'Score 2,500 points',           diff:null, check:s=>s.score>=2500},
+  {id:'score_1000',  icon:'🌟',name:'Five Grand',         desc:'Score 5,000 points',           diff:null, check:s=>s.score>=5000},
+  {id:'score_2500',  icon:'💥',name:'High Roller',        desc:'Score 10,000 points',          diff:null, check:s=>s.score>=10000},
+  {id:'score_5000',  icon:'🏅',name:'Legend',             desc:'Score 20,000 points',          diff:null, check:s=>s.score>=20000},
+  {id:'score_10000', icon:'👑',name:'Crown Royale',       desc:'Score 35,000 points',          diff:null, check:s=>s.score>=35000},
+  {id:'score_25000', icon:'💎',name:'Diamond Score',      desc:'Score 60,000 points',          diff:null, check:s=>s.score>=60000},
+  {id:'score_50000', icon:'🌈',name:'God Tier',           desc:'Score 100,000 points',         diff:null, check:s=>s.score>=100000},
   // ── FIRST ACTIONS ──
   {id:'first_bite',  icon:'🍎',name:'First Bite',         desc:'Eat your first item',          diff:null, check:s=>s.totalEaten>=1},
   {id:'first_boss',  icon:'⚔️',name:'Boss Fight!',        desc:'Trigger your first boss',      diff:null, check:s=>s.totalBosses>=1},
-  {id:'first_ghost', icon:'👻',name:'Ghost Mode',         desc:'Use a Star power-up',          diff:null, check:s=>s.usedStar>=1},
-  {id:'first_ice',   icon:'🧊',name:'Ice Ice Baby',       desc:'Use an Ice power-up',          diff:null, check:s=>s.usedIce>=1},
-  {id:'first_snip',  icon:'✂️',name:'Snip Snip',          desc:'Use a Scissors power-up',      diff:null, check:s=>s.usedScissors>=1},
+  {id:'first_ghost', icon:'👻',name:'Ghost Mode',         desc:'Use 3 Star power-ups',         diff:null, check:s=>s.usedStar>=3},
+  {id:'first_ice',   icon:'🧊',name:'Ice Ice Baby',       desc:'Use 3 Ice power-ups',          diff:null, check:s=>s.usedIce>=3},
+  {id:'first_snip',  icon:'✂️',name:'Snip Snip',          desc:'Use 3 Scissors power-ups',     diff:null, check:s=>s.usedScissors>=3},
   // ── LEVEL MILESTONES ──
-  {id:'reach_lvl5',  icon:'⚡',name:'Electrified',        desc:'Reach Level 5',                diff:null, check:s=>s.level>=5},
+  {id:'reach_lvl5',  icon:'⚡',name:'Electrified',        desc:'Reach Level 8',                diff:null, check:s=>s.level>=8},
   {id:'reach_lvl10', icon:'🔟',name:'Level 10!',          desc:'Reach Level 10',               diff:null, check:s=>s.level>=10},
   {id:'reach_lvl15', icon:'🎯',name:'Sharpshooter',       desc:'Reach Level 15',               diff:null, check:s=>s.level>=15},
   {id:'reach_lvl20', icon:'🏆',name:'All Bosses Cleared!',desc:'Reach Level 20',               diff:null, check:s=>s.level>=20},
   {id:'reach_lvl30', icon:'🌙',name:'Night Shift',        desc:'Reach Level 30',               diff:null, check:s=>s.level>=30},
   {id:'reach_lvl50', icon:'🌟',name:'Crescendo Master',   desc:'Reach Level 50',               diff:null, check:s=>s.level>=50},
   // ── COMBO TROPHIES ──
-  {id:'combo5',      icon:'💥',name:'Combo King',         desc:'Build a 5× combo',             diff:null, check:s=>s.maxCombo>=5},
-  {id:'combo7',      icon:'🌪️',name:'Unstoppable',        desc:'Build a 7× combo',             diff:null, check:s=>s.maxCombo>=7},
+  {id:'combo5',      icon:'💥',name:'Combo King',         desc:'Build a 10× combo',            diff:null, check:s=>s.maxCombo>=10},
+  {id:'combo7',      icon:'🌪️',name:'Unstoppable',        desc:'Build a 20× combo',            diff:null, check:s=>s.maxCombo>=20},
   // ── EATING ──
-  {id:'eaten_10',    icon:'🍽️',name:'Hungry',             desc:'Eat 10 items in one game',     diff:null, check:s=>s.gameEaten>=10},
-  {id:'eaten_25',    icon:'🐷',name:'Oink',               desc:'Eat 25 items in one game',     diff:null, check:s=>s.gameEaten>=25},
-  {id:'eaten_50',    icon:'🐊',name:'Croc Jaw',           desc:'Eat 50 items in one game',     diff:null, check:s=>s.gameEaten>=50},
-  {id:'eaten_100',   icon:'🦕',name:'Dinosaur',           desc:'Eat 100 items in one game',    diff:null, check:s=>s.gameEaten>=100},
-  {id:'total_100',   icon:'🎮',name:'Dedicated',          desc:'Eat 100 items total lifetime', diff:null, check:s=>s.totalEaten>=100},
-  {id:'total_500',   icon:'🏃',name:'Marathon',           desc:'Eat 500 items total lifetime', diff:null, check:s=>s.totalEaten>=500},
-  {id:'total_1000',  icon:'🌍',name:'World Eater',        desc:'Eat 1000 items total lifetime',diff:null, check:s=>s.totalEaten>=1000},
+  {id:'eaten_10',    icon:'🍽️',name:'Hungry',             desc:'Eat 30 items in one game',     diff:null, check:s=>s.gameEaten>=30},
+  {id:'eaten_25',    icon:'🐷',name:'Oink',               desc:'Eat 75 items in one game',     diff:null, check:s=>s.gameEaten>=75},
+  {id:'eaten_50',    icon:'🐊',name:'Croc Jaw',           desc:'Eat 150 items in one game',    diff:null, check:s=>s.gameEaten>=150},
+  {id:'eaten_100',   icon:'🦕',name:'Dinosaur',           desc:'Eat 250 items in one game',    diff:null, check:s=>s.gameEaten>=250},
+  {id:'total_100',   icon:'🎮',name:'Dedicated',          desc:'Eat 250 items total lifetime', diff:null, check:s=>s.totalEaten>=250},
+  {id:'total_500',   icon:'🏃',name:'Marathon',           desc:'Eat 1,000 items lifetime',     diff:null, check:s=>s.totalEaten>=1000},
+  {id:'total_1000',  icon:'🌍',name:'World Eater',        desc:'Eat 2,500 items lifetime',     diff:null, check:s=>s.totalEaten>=2500},
   // ── SNAKE LENGTH ──
-  {id:'len_10',      icon:'📏',name:'Getting Longer',     desc:'Grow to 10 segments',          diff:null, check:s=>s.maxLen>=10},
-  {id:'len_20',      icon:'🐍',name:'Long Boi',           desc:'Grow to 20 segments',          diff:null, check:s=>s.maxLen>=20},
-  {id:'len_35',      icon:'🌊',name:'Sea Serpent',        desc:'Grow to 35 segments',          diff:null, check:s=>s.maxLen>=35},
-  {id:'len_50',      icon:'🐉',name:'Dragon',             desc:'Grow to 50 segments',          diff:null, check:s=>s.maxLen>=50},
+  {id:'len_10',      icon:'📏',name:'Getting Longer',     desc:'Grow to 15 segments',          diff:null, check:s=>s.maxLen>=15},
+  {id:'len_20',      icon:'🐍',name:'Long Boi',           desc:'Grow to 30 segments',          diff:null, check:s=>s.maxLen>=30},
+  {id:'len_35',      icon:'🌊',name:'Sea Serpent',        desc:'Grow to 45 segments',          diff:null, check:s=>s.maxLen>=45},
+  {id:'len_50',      icon:'🐉',name:'Dragon',             desc:'Grow to 60 segments',          diff:null, check:s=>s.maxLen>=60},
   // ── SURVIVAL ──
-  {id:'survive_60',  icon:'⌛',name:'One Minute',         desc:'Survive 60 seconds',           diff:null, check:s=>s.surviveSeconds>=60},
-  {id:'survive_120', icon:'🕰️',name:'Two Minutes',        desc:'Survive 2 minutes',            diff:null, check:s=>s.surviveSeconds>=120},
-  {id:'survive_300', icon:'📅',name:'Five Minutes',       desc:'Survive 5 minutes',            diff:null, check:s=>s.surviveSeconds>=300},
+  {id:'survive_60',  icon:'⌛',name:'Warmed Up',          desc:'Survive 3 minutes',            diff:null, check:s=>s.surviveSeconds>=180},
+  {id:'survive_120', icon:'🕰️',name:'Marathon Snake',     desc:'Survive 8 minutes',            diff:null, check:s=>s.surviveSeconds>=480},
+  {id:'survive_300', icon:'📅',name:'Immortal',           desc:'Survive 15 minutes',           diff:null, check:s=>s.surviveSeconds>=900},
   // ── BOSS TROPHIES ──
   {id:'beat_boss1',  icon:'💀',name:'First Blood',        desc:'Defeat Boss 1',                diff:null, check:s=>s.totalBosses>=1},
   {id:'beat_boss2',  icon:'🥊',name:'Double Down',        desc:'Defeat 2 bosses',              diff:null, check:s=>s.totalBosses>=2},
@@ -7406,7 +7406,7 @@ const TROPHIES=[
   {id:'pop_boss',    icon:'🌟',name:'Pop Royalty',        desc:'Beat all bosses in Pop',       diff:null, check:s=>s.secretUnlocked&&s.genreKey==='pop'},
   {id:'secret',      icon:'🔓',name:'ALL CLEARED',        desc:'Beat all bosses in one genre', diff:null, check:s=>s.secretUnlocked},
   // ── STYLE / MISC ──
-  {id:'purist',      icon:'🙅',name:'Purist',             desc:'200 pts with no power-ups',    diff:null, check:s=>s.pureScore>=200},
+  {id:'purist',      icon:'🙅',name:'Purist',             desc:'500 pts with no power-ups',    diff:null, check:s=>s.pureScore>=500},
   {id:'collector',   icon:'🎒',name:'Collector',          desc:'Use 5 different power-up types',diff:null, check:s=>s.collectedTypes&&s.collectedTypes.size>=5},
   {id:'all_powers',  icon:'🌈',name:'Power Collector',    desc:'Use all power-up types',       diff:null, check:s=>s.collectedTypes&&s.collectedTypes.size>=8},
   // ── COVERAGE TROPHIES (snake fills the board) ──
@@ -7424,7 +7424,7 @@ const TROPHIES=[
   {id:'speed_demon', icon:'💨',name:'Speed Demon',        desc:'Eat 5 items in 10 seconds',    diff:null, check:s=>s.fastEatCount>=5},
   {id:'wall_survivor',icon:'🧱',name:'Wall Whisperer',    desc:'Survive 3 wall bounces',       diff:null, check:s=>s.wallBounces>=3},
   {id:'comeback',    icon:'❤️‍🔥',name:'Comeback King',    desc:'Score 500 after losing a life',diff:null, check:s=>s.comebackScore>=500},
-  {id:'coin_100',    icon:'🪙',name:'Coin Collector',     desc:'Earn 100 coins total',         diff:null, check:s=>s.totalCoins>=100},
+  {id:'coin_100',    icon:'🪙',name:'Coin Collector',     desc:'Earn 500 coins total',         diff:null, check:s=>s.totalCoins>=500},
   {id:'coin_1000',   icon:'💰',name:'Coin Hoarder',       desc:'Earn 1000 coins total',        diff:null, check:s=>s.totalCoins>=1000},
   {id:'skin_unlock', icon:'🎨',name:'Fashion Snake',      desc:'Unlock any skin',              diff:null, check:s=>s.skinsOwned>=2},
   {id:'daily_3',     icon:'📅',name:'Regular',            desc:'Play 3 days in a row',         diff:null, check:s=>s.streak>=3},
@@ -7510,7 +7510,7 @@ function doTrophyCheck(now){
   if(newly.length){
     saveT(unlocked);
     // Queue trophy toasts so multiple unlocks don't stack at once
-    newly.forEach((t,i)=>{ setTimeout(()=>_showTrophyToast(t), 400+i*2000); });
+    newly.forEach((t,i)=>{ setTimeout(()=>_showTrophyToast(t), 600+i*3200); });
   }
   // ── Mid-run daily challenge completion flash ──
   if(typeof isDailyChallengeComplete==='function' && !isDailyChallengeComplete()){
