@@ -10185,6 +10185,8 @@ function gameOver(){
     if(score>0 && (isNewBest||isNewHS) && window.submitGlobalScore){
       window.submitGlobalScore(playerName||'PLAYER',score,activeGenreKey(),diffId);
     }
+    // Show world rank on the game-over card ("#14 in the world" = retry fuel)
+    if(score>=100 && window.showWorldRank) setTimeout(()=>{ try{window.showWorldRank(score);}catch(e){} },700);
     const hsEntry=getHighScore(activeGenreKey(),diffId);
     const hsLine=hsEntry?`<br><span style="color:#ffd700;font-family:'Teko',sans-serif;font-size:11px;letter-spacing:.06em">🏆 ${diffId.toUpperCase()} BEST: ${hsEntry.score} — ${hsEntry.name} · ${hsEntry.date} ${hsEntry.time}</span>`:'';
     const title=isNewHS&&score>0?'NEW RECORD! 🏆':isNewBest?'NEW BEST!':'GAME OVER';
@@ -12519,7 +12521,7 @@ setTimeout(()=>{
       }).catch(()=>{});
     }catch(e){}
   };
-  window.fetchGlobalTop=function(cb){
+  window.fetchGlobalTop=function(cb,raw){
     fetch('https://firestore.googleapis.com/v1/projects/'+_FB.proj+'/databases/(default)/documents:runQuery?key='+_FB.key,{
       method:'POST',headers:{'Content-Type':'application/json'},
       body:JSON.stringify({structuredQuery:{
@@ -12540,11 +12542,39 @@ setTimeout(()=>{
           date:f.ts?new Date(Number(f.ts.integerValue)).toLocaleDateString():''
         });
       });
+      if(raw){ cb(out); return; } // undeduped, for filtering/rank math
       // one entry per player name — keep their best
       const best={};
       out.forEach(e=>{ if(!best[e.name]||e.score>best[e.name].score) best[e.name]=e; });
       cb(Object.values(best).sort((a,b)=>b.score-a.score).slice(0,50));
     }).catch(()=>cb(null));
+  };
+
+  // ── WORLD RANK — shown on the game-over screen after a submitted PB ──
+  window.showWorldRank=function(score){
+    try{
+      score=Math.floor(Number(score)||0);
+      if(score<100) return;
+      const p=window._curProfile&&window._curProfile();
+      const nm=p&&p.name;
+      window.fetchGlobalTop(function(raw){
+        if(!raw) return;
+        const best={};
+        raw.forEach(e=>{ if(!best[e.name]||e.score>best[e.name].score) best[e.name]=e; });
+        const meKey=nm||'\u0000you';
+        if(!best[meKey]||score>best[meKey].score) best[meKey]={name:meKey,score:score};
+        const list=Object.values(best).sort((a,b)=>b.score-a.score);
+        const idx=list.findIndex(e=>e.name===meKey);
+        if(idx<0||idx>99) return;
+        const sub=document.getElementById('ovSub');
+        if(!sub||document.getElementById('worldRankLine')) return;
+        const d=document.createElement('div');
+        d.id='worldRankLine';
+        d.style.cssText="font-family:'Teko',sans-serif;font-size:14px;color:#7ac8ff;margin-top:5px;letter-spacing:.08em";
+        d.innerHTML='🌍 WORLD RANK <b style="color:#ffd700">#'+(idx+1)+'</b>'+(idx===0?' — WORLD CHAMPION! 👑':idx<10?' — TOP 10!':' — climb!');
+        sub.appendChild(d);
+      },true);
+    }catch(e){}
   };
 
   // ── TITLE-SCREEN WORLD RECORDS TEASER ──
@@ -12583,15 +12613,18 @@ setTimeout(()=>{
     function renderRows(board){
       const medal=['🥇','🥈','🥉'];
       let rows='';
+      const _p=window._curProfile&&window._curProfile();
+      const _myName=_p&&_p.name;
       board.forEach((e,i)=>{
         const rank = i<3 ? medal[i] : `#${i+1}`;
         const gname=genreNames[e.genre]||(e.genre||'').toUpperCase();
         const dname=diffNames[e.diff]||'';
-        rows+=`<div style="display:flex;align-items:center;gap:8px;padding:8px 10px;margin-bottom:5px;border-radius:6px;background:${i%2?'rgba(255,255,255,.04)':'rgba(255,68,0,.07)'};border-left:3px solid ${i===0?'#ffd700':i===1?'#c0c0c0':i===2?'#cd7f32':'#552222'}">
+        const isYou=_myName&&e.name===_myName;
+        rows+=`<div style="display:flex;align-items:center;gap:8px;padding:8px 10px;margin-bottom:5px;border-radius:6px;background:${isYou?'rgba(255,210,74,.14)':i%2?'rgba(255,255,255,.04)':'rgba(255,68,0,.07)'};border-left:3px solid ${isYou?'#ffd700':i===0?'#ffd700':i===1?'#c0c0c0':i===2?'#cd7f32':'#552222'}${isYou?';box-shadow:0 0 10px rgba(255,210,74,.15)':''}">
           <div style="font-family:'Teko',sans-serif;font-size:20px;font-weight:700;color:#ffd24a;min-width:34px;text-align:center">${rank}</div>
           <div style="flex:1;min-width:0">
             <div style="font-family:'Teko',sans-serif;font-size:18px;font-weight:700;color:#fff;line-height:1">${e.score.toLocaleString()}</div>
-            <div style="font-family:'Teko',sans-serif;font-size:11px;color:#999;letter-spacing:.05em">${e.name} · <span style="color:#ff8800">${gname}</span> ${dname}</div>
+            <div style="font-family:'Teko',sans-serif;font-size:11px;color:${isYou?'#ffd24a':'#999'};letter-spacing:.05em">${isYou?'⭐ YOU ('+e.name+')':e.name} · <span style="color:#ff8800">${gname}</span> ${dname}</div>
           </div>
           <div style="font-family:'Teko',sans-serif;font-size:10px;color:#666">${e.date||''}</div>
         </div>`;
@@ -12630,18 +12663,31 @@ setTimeout(()=>{
       btn.style.background=on?'rgba(255,68,0,.25)':'rgba(255,255,255,.05)';
       btn.style.color=on?'#fff':'#999';
     }
-    let _globalCache=null;
+    let _globalRaw=null, _gFilter='all';
     function setTab(active){
       styleTab(tabAll,active==='all'); styleTab(tabWeek,active==='week'); styleTab(tabGlobal,active==='global');
       if(active==='global'){
-        if(_globalCache){ rowsEl.innerHTML=renderRows(_globalCache); return; }
+        const GFILT=[['all','ALL'],['metal','METAL'],['hiphop','HIPHOP'],['pop','POP'],['classical','CLASSIC'],['electronic','ELECTRO'],['country','COUNTRY'],['meditation','ZEN']];
+        const renderGlobal=()=>{
+          let list=(_globalRaw||[]);
+          if(_gFilter!=='all') list=list.filter(e=>e.genre===_gFilter);
+          const best={};
+          list.forEach(e=>{ if(!best[e.name]||e.score>best[e.name].score) best[e.name]=e; });
+          const top=Object.values(best).sort((a,b)=>b.score-a.score).slice(0,50);
+          const chips='<div style="display:flex;flex-wrap:wrap;gap:5px;justify-content:center;margin-bottom:10px">'
+            +GFILT.map(f=>`<button data-gf="${f[0]}" style="font-family:'Teko',sans-serif;font-weight:700;font-size:10px;letter-spacing:.1em;padding:4px 9px;border-radius:5px;cursor:pointer;border:1px solid ${_gFilter===f[0]?'#ffd24a':'rgba(255,255,255,.18)'};background:${_gFilter===f[0]?'rgba(255,210,74,.2)':'rgba(255,255,255,.04)'};color:${_gFilter===f[0]?'#ffd24a':'#888'}">${f[1]}</button>`).join('')
+            +'</div>';
+          rowsEl.innerHTML=chips+renderRows(top);
+          rowsEl.querySelectorAll('[data-gf]').forEach(b=>{ b.onclick=()=>{ _gFilter=b.dataset.gf; renderGlobal(); }; });
+        };
+        if(_globalRaw){ renderGlobal(); return; }
         rowsEl.innerHTML='<div style="font-family:\'Teko\',sans-serif;color:#888;text-align:center;padding:20px">Loading world records… 🌍</div>';
         window.fetchGlobalTop(list=>{
           if(!document.body.contains(rowsEl)) return; // modal was closed
           if(!list){ rowsEl.innerHTML='<div style="font-family:\'Teko\',sans-serif;color:#c66;text-align:center;padding:20px">Could not reach the leaderboard.<br>Check your connection and try again.</div>'; return; }
-          _globalCache=list;
-          rowsEl.innerHTML=renderRows(list);
-        });
+          _globalRaw=list;
+          renderGlobal();
+        },true);
         return;
       }
       rowsEl.innerHTML=renderRows(active==='all'?board:weeklyBoard);
