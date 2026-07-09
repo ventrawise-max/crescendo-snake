@@ -2667,6 +2667,18 @@ function getAC(){
   if(!AC) AC=new(window.AudioContext||window.webkitAudioContext)();
   return AC;
 }
+// ── GLOBAL AUDIO UNLOCK ──────────────────────────────────────────
+// Browsers differ in when they let a suspended AudioContext resume
+// (Chrome/Safari are stricter than Brave). Any user gesture anywhere
+// retries the unlock, and returning to the tab retries too.
+['pointerdown','touchend','keydown'].forEach(function(ev){
+  document.addEventListener(ev,function(){
+    try{ if(AC&&AC.state!=='running') AC.resume(); }catch(e){}
+  },{passive:true,capture:true});
+});
+document.addEventListener('visibilitychange',function(){
+  try{ if(!document.hidden&&AC&&AC.state!=='running') AC.resume(); }catch(e){}
+});
 // Global active-voice budget — prevents oscillator pile-ups that distort.
 let _activeVoices=0;
 const _VOICE_CAP=20;
@@ -9097,6 +9109,11 @@ startBtn.addEventListener('click',()=>{
       // Small delay lets oscillators start before crossfading in
       setTimeout(()=>setPhase(lvlToPhase(level)), 120);
     }
+    // If the browser still refuses audio, tell the player how to fix it
+    setTimeout(()=>{
+      try{ if(musicOn&&AC&&AC.state!=='running'&&typeof showStreakPop==='function')
+        showStreakPop('🔇 Tap the screen to enable sound','#ffd24a',false); }catch(e){}
+    },1500);
     beginLoop();
   }).catch(()=>{
     // resume() rejected (very rare) — try anyway
