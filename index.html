@@ -1598,42 +1598,50 @@ function drawSnakeHead(){
   g.beginPath(); g.ellipse(CX-6,44,1.8,1.2,-.3,0,Math.PI*2); g.fill();
   g.beginPath(); g.ellipse(CX+6,44,1.8,1.2,.3,0,Math.PI*2); g.fill();
 
-  // ── STRIKE GAPE — pale interior, thin curved fangs ──
-  g.fillStyle='#101208';
+  // ── STRIKE JAW — WIDE dark gape (wide+dark = menace; tall+pale = ...no) ──
+  // lower jaw drops as a broad wedge nearly as wide as the head
+  const jg=g.createLinearGradient(0,55,0,84);
+  jg.addColorStop(0,'#4a1016'); jg.addColorStop(.6,'#26080c'); jg.addColorStop(1,'#0e0306');
+  g.fillStyle=jg;
   g.beginPath();
-  g.moveTo(CX-14,55); g.quadraticCurveTo(CX,59,CX+14,55);
-  g.lineTo(CX+14,58); g.quadraticCurveTo(CX,62,CX-14,58);
+  g.moveTo(CX-21,55);
+  g.quadraticCurveTo(CX,60,CX+21,55);
+  g.lineTo(CX+15,80);
+  g.quadraticCurveTo(CX,86,CX-15,80);
   g.closePath(); g.fill();
-  const mg=g.createLinearGradient(0,56,0,90);
-  mg.addColorStop(0,'#e9d9cd'); mg.addColorStop(.55,'#c49a92'); mg.addColorStop(1,'#7c5252');
-  g.fillStyle=mg;
+  // charcoal lower-jaw rim under the gape
+  g.fillStyle='#191b14';
   g.beginPath();
-  g.moveTo(CX-13,57);
-  g.quadraticCurveTo(CX,61,CX+13,57);
-  g.quadraticCurveTo(CX+13,79,CX,87);
-  g.quadraticCurveTo(CX-13,79,CX-13,57);
+  g.moveTo(CX-15,80); g.quadraticCurveTo(CX,86,CX+15,80);
+  g.quadraticCurveTo(CX,92,CX-15,80);
   g.closePath(); g.fill();
-  g.fillStyle='#33121a';
-  g.beginPath(); g.ellipse(CX,67,6.6,4.2,0,0,Math.PI*2); g.fill();
-  // curved fangs
-  g.fillStyle='#f8f4ea'; g.strokeStyle='#c9bfa8'; g.lineWidth=0.8;
+  g.strokeStyle='#050603'; g.lineWidth=2;
+  g.beginPath(); g.moveTo(CX-15,81); g.quadraticCurveTo(CX,87,CX+15,81); g.stroke();
+  // upper lip line
+  g.strokeStyle='#050603'; g.lineWidth=2.5;
+  g.beginPath(); g.moveTo(CX-21,55); g.quadraticCurveTo(CX,60,CX+21,55); g.stroke();
+  // FANGS at the corners of the gape, curving inward
+  g.fillStyle='#f8f4ea'; g.strokeStyle='#b9af98'; g.lineWidth=0.8;
   g.beginPath();
-  g.moveTo(CX-10.5,58); g.quadraticCurveTo(CX-12,68,CX-7,76);
-  g.quadraticCurveTo(CX-8.5,67,CX-7.2,58.6); g.closePath(); g.fill(); g.stroke();
+  g.moveTo(CX-19,56.5); g.quadraticCurveTo(CX-19,68,CX-13,74);
+  g.quadraticCurveTo(CX-15.5,66,CX-14.6,57.4); g.closePath(); g.fill(); g.stroke();
   g.beginPath();
-  g.moveTo(CX+10.5,58); g.quadraticCurveTo(CX+12,68,CX+7,76);
-  g.quadraticCurveTo(CX+8.5,67,CX+7.2,58.6); g.closePath(); g.fill(); g.stroke();
-  // jaw rim
-  g.strokeStyle='#101208'; g.lineWidth=2.5;
-  g.beginPath(); g.moveTo(CX-13,57); g.quadraticCurveTo(CX-13,80,CX,88);
-  g.quadraticCurveTo(CX+13,80,CX+13,57); g.stroke();
-  // forked tongue
-  g.strokeStyle='#c40f0f'; g.lineCap='round';
+  g.moveTo(CX+19,56.5); g.quadraticCurveTo(CX+19,68,CX+13,74);
+  g.quadraticCurveTo(CX+15.5,66,CX+14.6,57.4); g.closePath(); g.fill(); g.stroke();
+  // small inner teeth row on the upper jaw
+  g.fillStyle='#e8e0cc';
+  for(let th=0;th<4;th++){
+    const tx=CX-8+th*5.4;
+    g.beginPath(); g.moveTo(tx-1.6,57.5); g.lineTo(tx,62.5); g.lineTo(tx+1.6,57.8);
+    g.closePath(); g.fill();
+  }
+  // forked tongue — short, fast flick out of the dark
+  g.strokeStyle='#e01414'; g.lineCap='round';
   g.lineWidth=2.2;
-  g.beginPath(); g.moveTo(CX,73); g.quadraticCurveTo(CX+1,90,CX+1,99); g.stroke();
+  g.beginPath(); g.moveTo(CX,72); g.quadraticCurveTo(CX+1,84,CX+1,92); g.stroke();
   g.lineWidth=1.5;
-  g.beginPath(); g.moveTo(CX+1,99); g.quadraticCurveTo(CX-2,105,CX-5,108); g.stroke();
-  g.beginPath(); g.moveTo(CX+1,99); g.quadraticCurveTo(CX+4,105,CX+7,107); g.stroke();
+  g.beginPath(); g.moveTo(CX+1,92); g.quadraticCurveTo(CX-2,97,CX-5,100); g.stroke();
+  g.beginPath(); g.moveTo(CX+1,92); g.quadraticCurveTo(CX+4,97,CX+7,99); g.stroke();
 
   // ── CROWN — small, on the skull ──
   const cg2=g.createLinearGradient(CX-10,0,CX+10,0);

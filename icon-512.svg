@@ -38,21 +38,24 @@
   <!-- nostrils -->
   <ellipse cx="234" cy="212" rx="7" ry="4.4" fill="#050603" transform="rotate(-14 234 212)"/>
   <ellipse cx="278" cy="212" rx="7" ry="4.4" fill="#050603" transform="rotate(14 278 212)"/>
-  <!-- pale strike gape -->
+  <!-- WIDE dark strike jaw -->
   <linearGradient id="maw" x1="0" y1="0" x2="0" y2="1">
-    <stop offset="0%" stop-color="#e9d9cd"/>
-    <stop offset="55%" stop-color="#c49a92"/>
-    <stop offset="100%" stop-color="#7c5252"/>
+    <stop offset="0%" stop-color="#4a1016"/>
+    <stop offset="60%" stop-color="#26080c"/>
+    <stop offset="100%" stop-color="#0e0306"/>
   </linearGradient>
   <path fill="url(#maw)" stroke="#101208" stroke-width="10"
-    d="M204 232q52 16 104 0q0 82-52 114q-52-32-52-114z"/>
-  <ellipse cx="256" cy="270" rx="27" ry="17" fill="#33121a"/>
-  <!-- thin curved fangs -->
-  <path fill="#f8f4ea" stroke="#c9bfa8" stroke-width="3"
-    d="M215 238q-6 40 14 68q-6-36 0-64zM297 238q6 40-14 68q6-36 0-64z"/>
+    d="M176 224q80 20 160 0l-24 96q-56 24-112 0z"/>
+  <path fill="#191b14" stroke="#050603" stroke-width="8"
+    d="M200 320q56 24 112 0q-56 46-112 0z"/>
+  <!-- corner fangs curving inward -->
+  <path fill="#f8f4ea" stroke="#b9af98" stroke-width="3"
+    d="M186 230q-2 44 22 66q-10-32-6-62zM326 230q2 44-22 66q10-32 6-62z"/>
+  <!-- inner teeth row -->
+  <path fill="#e8e0cc" d="M222 238l7 20 7-19zM250 241l7 20 7-19zM278 240l7 20 7-19z"/>
   <!-- forked tongue -->
-  <path fill="none" stroke="#c40f0f" stroke-width="8" stroke-linecap="round" d="M256 296q3 42 3 60"/>
-  <path fill="none" stroke="#c40f0f" stroke-width="5.5" stroke-linecap="round" d="M259 356q-9 20-20 29M259 356q11 20 22 28"/>
+  <path fill="none" stroke="#e01414" stroke-width="8" stroke-linecap="round" d="M256 292q3 34 3 48"/>
+  <path fill="none" stroke="#e01414" stroke-width="5.5" stroke-linecap="round" d="M259 340q-9 16-19 24M259 340q11 16 21 23"/>
   <!-- small crown on the skull -->
   <g transform="translate(256 52)">
     <path fill="#ffd24a" stroke="#9a7000" stroke-width="4"
