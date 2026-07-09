@@ -1502,145 +1502,152 @@ setTimeout(()=>{ drawPets(); setPetVisibility(true); },150);
 // ── Draw threatening snake head on title screen ──
 // Organic viper silhouette — nothing touches the canvas edges, no boxy glow.
 function drawSnakeHead(){
-  // ── STRIKING COBRA — head-on, hood flared, about to bite YOU ──
+  // ── STRIKING COBRA v2 — LAMPSHADE hood (flares OUT sideways, narrows to
+  //    the neck) + darker charcoal cobra colouring ──
   const cv=document.getElementById('snakeHead');
   if(!cv) return;
-  cv.width=120; cv.height=126;
+  cv.width=132; cv.height=126;
   const g=cv.getContext('2d');
-  g.clearRect(0,0,120,126);
+  g.clearRect(0,0,132,126);
+  const CX=66;
 
   // menace glow
-  const glow=g.createRadialGradient(60,58,6,60,58,58);
-  glow.addColorStop(0,'rgba(255,50,0,.30)');
-  glow.addColorStop(1,'rgba(255,50,0,0)');
-  g.fillStyle=glow; g.beginPath(); g.arc(60,58,58,0,Math.PI*2); g.fill();
+  const glow=g.createRadialGradient(CX,56,6,CX,56,62);
+  glow.addColorStop(0,'rgba(255,45,0,.28)');
+  glow.addColorStop(1,'rgba(255,45,0,0)');
+  g.fillStyle=glow; g.beginPath(); g.arc(CX,56,62,0,Math.PI*2); g.fill();
 
-  // ── FLARED HOOD — smooth wide spade, near-black, rim-lit ──
+  // ── HOOD — lampshade: flares WIDE from behind the head, widest at
+  //    mid-height, then sweeps down + inward to a narrow neck ──
   function hoodPath(){
     g.beginPath();
-    g.moveTo(60,6);
-    g.bezierCurveTo(92,8,112,34,110,62);
-    g.bezierCurveTo(108,86,88,102,74,110);
-    g.quadraticCurveTo(60,116,46,110);
-    g.bezierCurveTo(32,102,12,86,10,62);
-    g.bezierCurveTo(8,34,28,8,60,6);
+    g.moveTo(CX-16,14);                                // left of skull
+    g.bezierCurveTo(CX-52,20,CX-66,44,CX-63,64);       // flare hard out to the left rim
+    g.bezierCurveTo(CX-60,84,CX-38,102,CX-17,112);     // sweep down+inward to the neck
+    g.quadraticCurveTo(CX,117,CX+17,112);              // narrow neck base
+    g.bezierCurveTo(CX+38,102,CX+60,84,CX+63,64);      // right side back up
+    g.bezierCurveTo(CX+66,44,CX+52,20,CX+16,14);       // right flare to skull
+    g.quadraticCurveTo(CX,10,CX-16,14);                // over the top of the skull
     g.closePath();
   }
-  const hg=g.createLinearGradient(0,6,0,116);
-  hg.addColorStop(0,'#1c2410'); hg.addColorStop(.6,'#10160a'); hg.addColorStop(1,'#080c04');
+  const hg=g.createLinearGradient(0,10,0,118);
+  hg.addColorStop(0,'#232420'); hg.addColorStop(.55,'#141511'); hg.addColorStop(1,'#070806');
   g.fillStyle=hg; hoodPath(); g.fill();
-  // rim light on the hood edge
-  g.strokeStyle='#46561e'; g.lineWidth=2.5; hoodPath(); g.stroke();
-  // hood ribs — smooth vertical curves, catch the light
-  g.strokeStyle='rgba(110,130,50,.30)'; g.lineWidth=2;
-  [-34,-20,20,34].forEach(function(dx){
-    g.beginPath(); g.moveTo(60+dx*0.35,16);
-    g.quadraticCurveTo(60+dx,58,60+dx*0.55,102);
+  g.strokeStyle='#3c3e34'; g.lineWidth=2.5; hoodPath(); g.stroke();
+  // hood ribs — follow the outward flare (diagonal), subtle
+  g.strokeStyle='rgba(150,150,120,.16)'; g.lineWidth=2;
+  [[-1,0.9],[-1,0.55],[1,0.55],[1,0.9]].forEach(function(rb){
+    const dir=rb[0],k=rb[1];
+    g.beginPath();
+    g.moveTo(CX+dir*13,18);
+    g.quadraticCurveTo(CX+dir*58*k,52,CX+dir*30*k,106);
     g.stroke();
   });
+  // faint lighter belly-scale band inside the lower hood (cobra chest plates)
+  g.strokeStyle='rgba(180,175,150,.10)'; g.lineWidth=3;
+  for(let b=0;b<3;b++){
+    g.beginPath();
+    g.moveTo(CX-24+b*2,88+b*8);
+    g.quadraticCurveTo(CX,94+b*8,CX+24-b*2,88+b*8);
+    g.stroke();
+  }
 
-  // ── HEAD — narrow wedge inside the hood, tipped toward you ──
+  // ── HEAD — charcoal wedge at the top, tipped toward you ──
   function headPath(){
     g.beginPath();
-    g.moveTo(60,22);
-    g.bezierCurveTo(74,22,82,32,82,44);
-    g.bezierCurveTo(82,54,76,60,70,63);
-    g.lineTo(50,63);
-    g.bezierCurveTo(44,60,38,54,38,44);
-    g.bezierCurveTo(38,32,46,22,60,22);
+    g.moveTo(CX,12);
+    g.bezierCurveTo(CX+15,12,CX+23,22,CX+23,34);
+    g.bezierCurveTo(CX+23,45,CX+17,52,CX+11,55);
+    g.lineTo(CX-11,55);
+    g.bezierCurveTo(CX-17,52,CX-23,45,CX-23,34);
+    g.bezierCurveTo(CX-23,22,CX-15,12,CX,12);
     g.closePath();
   }
-  const hd=g.createLinearGradient(0,22,0,64);
-  hd.addColorStop(0,'#3a4c16'); hd.addColorStop(1,'#20300c');
+  const hd=g.createLinearGradient(0,12,0,56);
+  hd.addColorStop(0,'#33352c'); hd.addColorStop(1,'#191b14');
   g.fillStyle=hd; headPath(); g.fill();
-  g.strokeStyle='#0a1202'; g.lineWidth=2; headPath(); g.stroke();
-  // subtle scale speckle
-  g.fillStyle='rgba(0,0,0,.18)';
-  [[50,30],[70,30],[60,36],[46,42],[74,42]].forEach(function(p2){
-    g.beginPath(); g.arc(p2[0],p2[1],2.2,0,Math.PI*2); g.fill();
+  g.strokeStyle='#050603'; g.lineWidth=2; headPath(); g.stroke();
+  // scale speckle
+  g.fillStyle='rgba(0,0,0,.22)';
+  [[CX-10,20],[CX+10,20],[CX,26],[CX-14,32],[CX+14,32]].forEach(function(p2){
+    g.beginPath(); g.arc(p2[0],p2[1],2,0,Math.PI*2); g.fill();
   });
 
-  // ── EYES — angled almonds, slit pupils, glaring straight at you ──
-  // anger comes from the tilt + sharp inner corners, NOT cartoon brows
-  [[49,40,0.42,1],[71,40,-0.42,-1]].forEach(function(e){
+  // ── EYES — angled almonds, slit pupils, locked on you ──
+  [[CX-11,30,0.42],[CX+11,30,-0.42]].forEach(function(e){
     g.save(); g.translate(e[0],e[1]); g.rotate(e[2]);
-    // sharp almond
-    g.fillStyle='#0a1400';
+    g.fillStyle='#000';
     g.beginPath();
     g.moveTo(-8.5,0); g.quadraticCurveTo(0,-6.5,8.5,0); g.quadraticCurveTo(0,6.5,-8.5,0);
     g.closePath(); g.fill();
     const eg=g.createRadialGradient(0,0,0,0,0,8);
-    eg.addColorStop(0,'#ffcf24'); eg.addColorStop(.45,'#ff7000'); eg.addColorStop(1,'#7a1600');
+    eg.addColorStop(0,'#ffcf24'); eg.addColorStop(.45,'#ff6a00'); eg.addColorStop(1,'#701200');
     g.fillStyle=eg;
     g.beginPath();
     g.moveTo(-7,0); g.quadraticCurveTo(0,-5.2,7,0); g.quadraticCurveTo(0,5.2,-7,0);
     g.closePath(); g.fill();
-    // vertical slit pupil
     g.fillStyle='#000';
-    g.beginPath(); g.ellipse(0,0,1.5,4.6,0,0,Math.PI*2); g.fill();
+    g.beginPath(); g.ellipse(0,0,1.5,4.4,0,0,Math.PI*2); g.fill();
     g.fillStyle='rgba(255,255,220,.75)';
     g.beginPath(); g.arc(-2.6,-1.8,1.1,0,Math.PI*2); g.fill();
     g.restore();
   });
 
-  // nostrils — small, on the snout
-  g.fillStyle='#0a0f02';
-  g.beginPath(); g.ellipse(54,52,1.8,1.2,-.3,0,Math.PI*2); g.fill();
-  g.beginPath(); g.ellipse(66,52,1.8,1.2,.3,0,Math.PI*2); g.fill();
+  // nostrils
+  g.fillStyle='#050603';
+  g.beginPath(); g.ellipse(CX-6,44,1.8,1.2,-.3,0,Math.PI*2); g.fill();
+  g.beginPath(); g.ellipse(CX+6,44,1.8,1.2,.3,0,Math.PI*2); g.fill();
 
-  // ── OPEN STRIKE MOUTH — pale interior (real cobras gape PALE), thin curved fangs ──
-  // upper jaw edge
-  g.fillStyle='#1a2408';
+  // ── STRIKE GAPE — pale interior, thin curved fangs ──
+  g.fillStyle='#101208';
   g.beginPath();
-  g.moveTo(46,63); g.quadraticCurveTo(60,67,74,63);
-  g.lineTo(74,66); g.quadraticCurveTo(60,70,46,66);
+  g.moveTo(CX-14,55); g.quadraticCurveTo(CX,59,CX+14,55);
+  g.lineTo(CX+14,58); g.quadraticCurveTo(CX,62,CX-14,58);
   g.closePath(); g.fill();
-  // gaping pale mouth
-  const mg=g.createLinearGradient(0,64,0,96);
-  mg.addColorStop(0,'#e9d9cd'); mg.addColorStop(.55,'#caa39a'); mg.addColorStop(1,'#8a5a5a');
+  const mg=g.createLinearGradient(0,56,0,90);
+  mg.addColorStop(0,'#e9d9cd'); mg.addColorStop(.55,'#c49a92'); mg.addColorStop(1,'#7c5252');
   g.fillStyle=mg;
   g.beginPath();
-  g.moveTo(47,65);
-  g.quadraticCurveTo(60,69,73,65);
-  g.quadraticCurveTo(73,86,60,94);
-  g.quadraticCurveTo(47,86,47,65);
+  g.moveTo(CX-13,57);
+  g.quadraticCurveTo(CX,61,CX+13,57);
+  g.quadraticCurveTo(CX+13,79,CX,87);
+  g.quadraticCurveTo(CX-13,79,CX-13,57);
   g.closePath(); g.fill();
-  // dark throat at the back of the gape
-  g.fillStyle='#3a1418';
-  g.beginPath(); g.ellipse(60,74,7,4.6,0,0,Math.PI*2); g.fill();
-  // thin CURVED fangs from the upper jaw, tips angled inward
+  g.fillStyle='#33121a';
+  g.beginPath(); g.ellipse(CX,67,6.6,4.2,0,0,Math.PI*2); g.fill();
+  // curved fangs
   g.fillStyle='#f8f4ea'; g.strokeStyle='#c9bfa8'; g.lineWidth=0.8;
   g.beginPath();
-  g.moveTo(49.5,66); g.quadraticCurveTo(48,76,53,84);
-  g.quadraticCurveTo(51.5,75,52.8,66.6); g.closePath(); g.fill(); g.stroke();
+  g.moveTo(CX-10.5,58); g.quadraticCurveTo(CX-12,68,CX-7,76);
+  g.quadraticCurveTo(CX-8.5,67,CX-7.2,58.6); g.closePath(); g.fill(); g.stroke();
   g.beginPath();
-  g.moveTo(70.5,66); g.quadraticCurveTo(72,76,67,84);
-  g.quadraticCurveTo(68.5,75,67.2,66.6); g.closePath(); g.fill(); g.stroke();
-  // lower jaw rim
-  g.strokeStyle='#1a2408'; g.lineWidth=2.5;
-  g.beginPath(); g.moveTo(47,65); g.quadraticCurveTo(47,87,60,95);
-  g.quadraticCurveTo(73,87,73,65); g.stroke();
-  // thin forked tongue lashing out of the gape
+  g.moveTo(CX+10.5,58); g.quadraticCurveTo(CX+12,68,CX+7,76);
+  g.quadraticCurveTo(CX+8.5,67,CX+7.2,58.6); g.closePath(); g.fill(); g.stroke();
+  // jaw rim
+  g.strokeStyle='#101208'; g.lineWidth=2.5;
+  g.beginPath(); g.moveTo(CX-13,57); g.quadraticCurveTo(CX-13,80,CX,88);
+  g.quadraticCurveTo(CX+13,80,CX+13,57); g.stroke();
+  // forked tongue
   g.strokeStyle='#c40f0f'; g.lineCap='round';
   g.lineWidth=2.2;
-  g.beginPath(); g.moveTo(60,80); g.quadraticCurveTo(61,96,61,104); g.stroke();
+  g.beginPath(); g.moveTo(CX,73); g.quadraticCurveTo(CX+1,90,CX+1,99); g.stroke();
   g.lineWidth=1.5;
-  g.beginPath(); g.moveTo(61,104); g.quadraticCurveTo(58,110,55,113); g.stroke();
-  g.beginPath(); g.moveTo(61,104); g.quadraticCurveTo(64,110,67,112); g.stroke();
+  g.beginPath(); g.moveTo(CX+1,99); g.quadraticCurveTo(CX-2,105,CX-5,108); g.stroke();
+  g.beginPath(); g.moveTo(CX+1,99); g.quadraticCurveTo(CX+4,105,CX+7,107); g.stroke();
 
-  // ── CROWN — small, sits on the skull, doesn't fight the silhouette ──
-  const cg2=g.createLinearGradient(50,0,70,0);
+  // ── CROWN — small, on the skull ──
+  const cg2=g.createLinearGradient(CX-10,0,CX+10,0);
   cg2.addColorStop(0,'#ffd24a'); cg2.addColorStop(.5,'#fff0a0'); cg2.addColorStop(1,'#e0a800');
   g.fillStyle=cg2;
   g.beginPath();
-  g.moveTo(50,23); g.lineTo(52,14); g.lineTo(56.5,19.5);
-  g.lineTo(60,12); g.lineTo(63.5,19.5); g.lineTo(68,14); g.lineTo(70,23);
+  g.moveTo(CX-10,13); g.lineTo(CX-8,5); g.lineTo(CX-3.5,10);
+  g.lineTo(CX,3); g.lineTo(CX+3.5,10); g.lineTo(CX+8,5); g.lineTo(CX+10,13);
   g.closePath(); g.fill();
   g.strokeStyle='#9a7000'; g.lineWidth=1;
   g.beginPath();
-  g.moveTo(50,23); g.lineTo(52,14); g.lineTo(56.5,19.5); g.lineTo(60,12); g.lineTo(63.5,19.5); g.lineTo(68,14); g.lineTo(70,23);
+  g.moveTo(CX-10,13); g.lineTo(CX-8,5); g.lineTo(CX-3.5,10); g.lineTo(CX,3); g.lineTo(CX+3.5,10); g.lineTo(CX+8,5); g.lineTo(CX+10,13);
   g.stroke();
-  g.fillStyle='#ff3355'; g.beginPath(); g.arc(60,14.5,1.8,0,Math.PI*2); g.fill();
+  g.fillStyle='#ff3355'; g.beginPath(); g.arc(CX,5.5,1.6,0,Math.PI*2); g.fill();
 }
 setTimeout(drawSnakeHead, 100);
 
