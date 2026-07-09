@@ -11677,25 +11677,25 @@ function draw(now){
     const cat=ITEM_CAT[pu.id]|| (pu.isKill?{col:'#ff2222',kind:'danger'}:{col:(pu.col||g.accent),kind:'bonus'});
     const rc=cat.col, danger=(cat.kind==='danger'||pu.isKill);
     ctx.save();
-    // smaller tile so adjacent items don't blend together
-    const bs=GRID*.56;
-    // solid dark rounded backing tile so the item stands out on ANY background
-    ctx.globalAlpha=.85; ctx.fillStyle='rgba(10,6,12,.95)';
-    ctx.beginPath(); ctx.roundRect(px2-bs,py2-bs,bs*2,bs*2, danger?3:bs*.5); ctx.fill();
-    if(danger){
-      // DANGER: white halo OUTSIDE the red ring so death items are unmistakable even on RED stages
-      ctx.globalAlpha=.95; ctx.strokeStyle='#ffffff'; ctx.lineWidth=3.5; ctx.shadowBlur=10; ctx.shadowColor='#ff0000';
-      ctx.beginPath(); ctx.roundRect(px2-bs-1.5,py2-bs-1.5,(bs+1.5)*2,(bs+1.5)*2,4); ctx.stroke();
-      ctx.globalAlpha=1; ctx.strokeStyle=rc; ctx.lineWidth=2.5; ctx.shadowBlur=0;
-      ctx.beginPath(); ctx.roundRect(px2-bs,py2-bs,bs*2,bs*2,3); ctx.stroke();
-      ctx.globalAlpha=.2+Math.sin(now/110)*.12; ctx.fillStyle=rc;
-      ctx.beginPath(); ctx.roundRect(px2-bs,py2-bs,bs*2,bs*2,3); ctx.fill();
-    } else {
-      // bonus/ability: bright type-colored rounded ring
-      ctx.globalAlpha=.95; ctx.strokeStyle=rc; ctx.lineWidth=2.4; ctx.shadowBlur=10; ctx.shadowColor=rc;
-      ctx.beginPath(); ctx.roundRect(px2-bs,py2-bs,bs*2,bs*2,bs*.5); ctx.stroke();
-      ctx.globalAlpha=.2+Math.sin(now/220)*.1; ctx.lineWidth=1;
-      ctx.beginPath(); ctx.arc(px2,py2,GRID*.7,0,Math.PI*2); ctx.stroke();
+    // ── GLOWING PIXEL ORB (replaces the old backing tile + square ring) ──
+    // Soft type-colored glow globe + dark core disc for icon contrast +
+    // orbiting pixel sparks. Reads on any background without a boxy border.
+    const orbR=GRID*(danger?1.05:0.92);
+    const og=ctx.createRadialGradient(px2,py2,2,px2,py2,orbR);
+    og.addColorStop(0,rc+'bb'); og.addColorStop(.55,rc+'33'); og.addColorStop(1,'rgba(0,0,0,0)');
+    ctx.globalAlpha=.7+Math.sin(now/(danger?110:230))*.22;
+    ctx.fillStyle=og; ctx.beginPath(); ctx.arc(px2,py2,orbR,0,Math.PI*2); ctx.fill();
+    // dark core disc so the icon pops
+    ctx.globalAlpha=.6; ctx.fillStyle='rgba(8,4,10,.95)';
+    ctx.beginPath(); ctx.arc(px2,py2,GRID*.5,0,Math.PI*2); ctx.fill();
+    // orbiting pixel sparks — danger alternates white/red and spins faster
+    const spN=danger?6:4;
+    for(let p=0;p<spN;p++){
+      const a=now/(danger?260:520)+p*(Math.PI*2/spN);
+      const rr=GRID*(.6+Math.sin(now/240+p)*.08);
+      ctx.fillStyle=(danger&&p%2)?'#ffffff':rc;
+      ctx.globalAlpha=.45+.5*Math.abs(Math.sin(now/170+p*2));
+      ctx.fillRect(px2+Math.cos(a)*rr-1.6,py2+Math.sin(a)*rr-1.6,3.2,3.2);
     }
     ctx.restore();
     // the icon itself — slightly smaller to fit the tighter tile
