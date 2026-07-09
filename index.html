@@ -5657,38 +5657,22 @@ function drawVictoryPlayer(ctx, genre, idx){
   ctx.clearRect(0,0,150,170);
   ctx.save();
   // ground shadow
-  ctx.fillStyle='rgba(0,0,0,.35)'; ctx.beginPath(); ctx.ellipse(75,158,34,7,0,0,Math.PI*2); ctx.fill();
-  // platform glow
+  ctx.fillStyle='rgba(0,0,0,.35)'; ctx.beginPath(); ctx.ellipse(75,158,40,7,0,0,Math.PI*2); ctx.fill();
   const acc=(typeof activeGenre!=='undefined'&&activeGenre)?activeGenre.accent:'#ff8800';
-  ctx.translate(75,150);
-  ctx.scale(3.0,3.0);            // big, clean
+  ctx.translate(75,152);
+  ctx.scale(2.4,2.4);
   const isFinal=idx===3;
-  // Pose transform: arms-up / hip-thrust feel via slight lean + bounce
   const t=performance.now()/300;
-  const lean=isFinal?Math.sin(t)*0.12:0; // final boss = cheeky hip sway
+  const lean=isFinal?Math.sin(t)*0.10:0; // final boss = cheeky sway
   ctx.rotate(lean);
-  // centre the ~6-wide,14-tall sprite (×2 inside drawPlayerChar) => ~12×28; shift to base
-  ctx.translate(-6,-28);
-  // draw the player using existing art
-  try{ drawPlayerChar(ctx, 0, 0, 'male', genre, 2); }catch(e){}
-  // RAISED ARMS overlay (victory) — simple triumphant arms over the sprite
-  ctx.fillStyle = playerSkinFor(genre);
-  if(isFinal){
-    // hip-thrust finale: one arm up, hips out (cheeky)
-    ctx.fillRect(9,1,2,5);   // right arm up
-    ctx.fillRect(-2,7,2,4);  // left arm on hip
-  } else {
-    ctx.fillRect(-2,-2,2,6); // left arm up
-    ctx.fillRect(11,-2,2,6); // right arm up
-    // little fists
-    ctx.fillStyle='#fff';
-    ctx.fillRect(-2,-3,2,2); ctx.fillRect(11,-3,2,2);
-  }
+  // trainer+snake sprite is ~50px wide, ~36 tall at S=2 — centre on the base
+  ctx.translate(-25,-36);
+  try{ drawPlayerChar(ctx, 0, 0, (typeof playerGender!=='undefined'?playerGender:'male'), genre, t, 'win'); }catch(e){}
   ctx.restore();
-  // sparkle accents around the winner
+  // sparkle accents around the winners
   ctx.save();
   for(let i=0;i<5;i++){
-    const a=performance.now()/400+i*1.3; const rx=75+Math.cos(a)*42; const ry=80+Math.sin(a*1.3)*38;
+    const a=performance.now()/400+i*1.3; const rx=75+Math.cos(a)*46; const ry=80+Math.sin(a*1.3)*40;
     ctx.fillStyle=i%2?'#fff':acc; ctx.globalAlpha=0.5+0.5*Math.sin(a*2);
     ctx.beginPath(); ctx.arc(rx,ry,2,0,Math.PI*2); ctx.fill();
   }
@@ -5959,234 +5943,135 @@ function rpsRevealTick(){
   if(rpsActive) requestAnimationFrame(rpsRevealTick);
 }
 
-function drawPlayerChar(ctx,x,y,gender,genre,frame){
-  const bob=Math.sin(frame*.6)*1.5;
-  const armSwing=Math.sin(frame*.6)*2; // arm animation
+function drawPlayerChar(ctx,x,y,gender,genre,frame,pose){
+  // ── ROCKSTAR TRAINER + COMPANION SNAKE (owner-picked style A + Pokemon idea) ──
+  // The human is the TRAINER; the Neon Pulse snake battles at their side on a
+  // leash. pose: 'battle' (default) or 'win' (arms up, snake rears + star).
+  const win=(pose==='win');
+  const bob=win?Math.abs(Math.sin(frame*.8))*-3:Math.sin(frame*.6)*1.5;
+  const armSwing=Math.sin(frame*.6)*1.2;
   y+=bob;
-  const S=2; // pixel scale
-  // filled block with dark outline for crisp pixel-art look
-  function px(rx,ry,rw,rh,c,outline='#111'){
+  const S=2;
+  const px=(rx,ry,rw,rh,c)=>{
+    ctx.fillStyle='#0a0a0f'; ctx.fillRect(x+rx*S-0.8,y+ry*S-0.8,rw*S+1.6,rh*S+1.6);
     ctx.fillStyle=c; ctx.fillRect(x+rx*S,y+ry*S,rw*S,rh*S);
-    ctx.strokeStyle=outline; ctx.lineWidth=0.7;
-    ctx.strokeRect(x+rx*S+0.5,y+ry*S+0.5,rw*S-1,rh*S-1);
-  }
-  // no-outline variant for fine detail
-  function dot(rx,ry,rw,rh,c){ ctx.fillStyle=c; ctx.fillRect(x+rx*S,y+ry*S,rw*S,rh*S); }
-  // blinking eye: solid when open, thin line when blink frame
-  function eye(rx,ry,col='#222'){
-    const blink=frame%60>57;
-    if(blink){ dot(rx,ry+0.5,1,0.4,col); } else { dot(rx,ry,1,1,col); dot(rx+0.2,ry+0.1,0.4,0.4,'#fff'); }
-  }
+  };
+  const dot=(rx,ry,rw,rh,c)=>{ ctx.fillStyle=c; ctx.fillRect(x+rx*S,y+ry*S,rw*S,rh*S); };
+  const skin=playerSkinFor(genre);
+  const isF=(gender==='female');
+  const PAL={
+    metal:{hair:isF?'#6600aa':'#1a1a1a',hairHi:isF?'#9933cc':'#333',outfit:'#1a1a1a',outfitHi:'#2e2e2e',shirt:'#cc0000',shirtHi:'#ff2200',boot:'#2a2a2a'},
+    hiphop:{hair:'#111',hairHi:'#333',outfit:isF?'#cc44ff':'#f4f4f4',outfitHi:isF?'#dd77ff':'#ffffff',shirt:'#1a1a2e',shirtHi:'#2a2a4e',boot:'#eeeeee',cap:true},
+    pop:{hair:isF?'#ff69b4':'#c9a83a',hairHi:isF?'#ffa0d0':'#e8cc66',outfit:'#ff2f8c',outfitHi:'#ff6aae',shirt:'#ffffff',shirtHi:'#ffd7ec',boot:'#ffffff'},
+    classical:{hair:'#d8d0c0',hairHi:'#eee8dc',outfit:'#22223a',outfitHi:'#34345a',shirt:'#ffffff',shirtHi:'#e8e8f4',boot:'#111111'},
+    electronic:{hair:isF?'#ff3cdc':'#00e5ff',hairHi:isF?'#ff7ae8':'#7df0ff',outfit:'#12141c',outfitHi:'#232838',shirt:'#00e5ff',shirtHi:'#aef4ff',boot:'#12141c'},
+    country:{hair:isF?'#c9863a':'#5a3a1a',hairHi:isF?'#e0a860':'#7a5228',outfit:'#5a3a1a',outfitHi:'#75512a',shirt:'#cc4422',shirtHi:'#e86a3a',boot:'#3a2410',hat:true}
+  };
+  const p=PAL[genre]||PAL.metal;
 
-  if(genre==='metal'){
-    const isFemale=gender==='female';
-    const hair=isFemale?'#6600aa':'#1a1a1a'; const hairHi=isFemale?'#9933cc':'#333';
-    const skin='#e8b08a'; const skinShadow='#c88a6a';
-    const jacket='#1a1a1a'; const jacketHi='#2e2e2e'; const tee='#cc0000'; const teeHi='#ff2200';
-    const boot='#2a2a2a'; const bootSole='#444';
-    const oy=isFemale?2:0; // vertical offset for female hair bump
-    // hair
-    if(isFemale){
-      px(0,0,6,3,hair); px(-1,0,1,7,hair); px(6,0,1,7,hair);
-      dot(0,0,6,1,hairHi); // highlight top
-    } else {
-      px(0,0,6,3,hair); dot(1,0,4,1,hairHi);
-    }
-    // head
-    px(1,oy,4,4,skin,'#a07050');
-    dot(2,oy+1,2,1,skinShadow); // cheek shadow
-    eye(2,oy+1); eye(4,oy+1);
-    dot(3,oy+2,1,1,'#c26060'); // mouth
-    // jacket body
-    px(0,oy+3,6,5,jacket,'#000');
-    px(1,oy+4,4,2,tee); dot(1,oy+4,4,1,teeHi); // band tee
-    dot(0,oy+3,1,5,jacketHi); dot(5,oy+3,1,5,jacketHi); // jacket edge shine
-    // swinging arm (holding guitar pick)
-    const armY=oy+4+Math.round(armSwing*0.5);
-    px(-1,armY,1,3,jacket,'#000'); // left arm
-    px(6,oy+4-Math.round(armSwing*0.5),1,3,jacket,'#000'); // right arm raised
-    dot(6,oy+5,1,1,'#ffd700'); // pick flash
-    // legs
-    px(1,oy+7,2,4,jacket,'#000'); px(3,oy+7,2,4,jacket,'#000');
-    dot(1,oy+7,2,1,'#333'); dot(3,oy+7,2,1,'#333'); // belt shine
-    // boots
-    px(0,oy+10,3,2,boot,'#000'); px(3,oy+10,3,2,boot,'#000');
-    dot(0,oy+11,3,1,bootSole); dot(3,oy+11,3,1,bootSole);
-
-  } else if(genre==='hiphop'){
-    const isFemale=gender==='female';
-    const skin=isFemale?'#8b5e3c':'#6b3a1f'; const skinHi=isFemale?'#b07850':'#8b5030';
-    const cap='#111'; const capBrim='#222'; const fit=isFemale?'#cc44ff':'#fff'; const fitShadow=isFemale?'#aa22dd':'#ddd';
-    const jeans='#1a1a2e'; const jeansHi='#2a2a4e'; const shoe='#eee'; const shoeSole='#ccc';
-    // snapback
-    px(1,0,4,2,cap,'#000'); px(0,1,6,1,capBrim,'#000');
-    dot(1,0,4,1,'#333'); // cap highlight
-    if(isFemale){ px(-1,1,1,4,skin,'#805030'); px(6,1,1,4,skin,'#805030'); } // side hair
-    // head
-    px(1,1,4,4,skin,'#7a4020');
-    dot(2,2,2,1,skinHi); // highlight
-    eye(2,2); eye(4,2);
-    dot(3,3,1,1,'#8b4020'); // mouth
-    // chain / jewelry
-    ctx.fillStyle='#ffd700'; ctx.fillRect(x+2*S,y+5*S,4*S,S*0.8);
-    dot(3,5,1,1,'#fff'); // chain catch light
-    // oversized tee with wrinkle details
-    px(0,4,6,6,fit,'#888'); dot(0,4,2,6,fitShadow); dot(4,4,2,6,fitShadow);
-    // arm swing
-    px(-1,5+Math.round(armSwing*0.4),1,4,fit,'#888');
-    px(6,5-Math.round(armSwing*0.4),1,4,fit,'#888');
-    // baggy jeans
-    px(0,9,3,5,jeans,'#111'); px(3,9,3,5,jeans,'#111');
-    dot(0,9,3,1,jeansHi); dot(3,9,3,1,jeansHi);
-    // fresh kicks
-    px(-1,13,4,2,shoe,'#aaa'); px(3,13,4,2,shoe,'#aaa');
-    dot(-1,14,4,1,shoeSole); dot(3,14,4,1,shoeSole);
-
-  } else if(genre==='pop'){
-    const isFemale=gender==='female';
-    const skin=isFemale?'#f8d0b0':'#f5c5a0'; const skinShadow=isFemale?'#d4a880':'#d4a070';
-    if(isFemale){
-      const hairCol='#ff69b4'; const hairHi='#ff99cc';
-      // voluminous hair
-      px(-1,0,8,4,hairCol,'#cc1166'); dot(0,0,6,1,hairHi);
-      // head
-      px(1,1,4,4,skin,'#c08060');
-      dot(2,2,2,1,skinShadow);
-      eye(2,2,'#c8388a'); eye(4,2,'#c8388a');
-      dot(2,4,2,1,'#e05080'); // lips
-      dot(1,4,1,1,'#ffaacc'); dot(4,4,1,1,'#ffaacc'); // blush
-      // sparkle earrings
-      dot(0,3,1,1,'#ffd700'); dot(6,3,1,1,'#ffd700');
-      // dress top
-      px(0,4,6,5,'#ff1493','#aa0066'); dot(0,4,6,1,'#ff69b4'); // highlight
-      // flared skirt
-      px(-1,8,8,5,'#ff8fcc','#cc4499'); dot(-1,8,8,1,'#ffaadd');
-      // arms
-      px(-1,5+Math.round(armSwing*0.4),1,3,skin,'#c08060');
-      px(6,5-Math.round(armSwing*0.4),1,3,skin,'#c08060');
-      // heels
-      px(1,12,2,2,'#ff1493','#aa0066'); px(3,12,2,2,'#ff1493','#aa0066');
-      dot(2,13,1,1,'#ff69b4'); dot(4,13,1,1,'#ff69b4');
-    } else {
-      // stylish male pop star
-      px(1,0,4,4,skin,'#c08060');
-      dot(2,1,2,1,'#d4a070');
-      eye(2,1); eye(4,1);
-      dot(3,2,1,1,'#c06060');
-      px(0,3,6,6,'#ff69b4','#cc1166'); dot(0,3,6,1,'#ff99cc');
-      px(-1,4+Math.round(armSwing*0.4),1,3,'#ff69b4','#cc1166');
-      px(6,4-Math.round(armSwing*0.4),1,3,'#ff69b4','#cc1166');
-      px(1,8,2,4,'#111','#000'); px(3,8,2,4,'#111','#000');
-      dot(1,8,2,1,'#333'); dot(3,8,1,1,'#333');
-      px(0,11,3,2,'#f0f0f0','#aaa'); px(3,11,3,2,'#f0f0f0','#aaa');
-    }
-
-  } else if(genre==='classical'){
-    const isFemale=gender==='female';
-    const skin='#f0d0b0'; const skinS='#c8a888';
-    const suit='#1a1a3a'; const suitHi='#2a2a5a'; const shirt='#f0f0ff'; const bow='#cc0000';
-    if(isFemale){
-      // elegant dress
-      px(-1,0,2,8,'#7722aa','#550088'); px(6,0,2,8,'#7722aa','#550088'); // long hair
-      dot(-1,0,2,1,'#9944cc'); dot(6,0,2,1,'#9944cc');
-      px(1,0,4,4,skin,'#c0a080');
-      dot(2,1,2,1,skinS);
-      eye(2,1,'#553388'); eye(4,1,'#553388');
-      dot(2,3,2,1,'#cc4466');
-      // pearl necklace
-      ctx.fillStyle='#f0f0f0'; for(let i=0;i<4;i++) ctx.fillRect(x+(2+i)*S,y+4*S,S*0.8,S*0.8);
-      px(0,4,6,8,'#4422aa','#220066'); dot(0,4,6,1,'#6644cc');
-      px(-1,5+Math.round(armSwing*0.4),1,5,skin,'#c0a080');
-      px(6,5-Math.round(armSwing*0.4),1,5,skin,'#c0a080');
-      px(1,11,2,2,'#222','#000'); px(3,11,2,2,'#222','#000');
-    } else {
-      px(1,0,4,4,skin,'#c0a080'); dot(2,1,2,1,skinS);
-      eye(2,1); eye(4,1); dot(3,2,1,1,'#c06060');
-      // collar
-      dot(1,3,4,1,'#f0e0b0');
-      // suit
-      px(0,4,6,6,suit,'#000'); dot(0,4,1,6,suitHi); dot(5,4,1,6,suitHi);
-      px(2,4,2,6,shirt,'#ccccee'); dot(2,4,2,1,'#fff');
-      dot(2,5,2,1,bow); // bow tie
-      // arms + baton hand
-      px(-1,5+Math.round(armSwing*0.4),1,4,suit,'#000');
-      px(6,5-Math.round(armSwing*0.5),1,4,suit,'#000');
-      dot(7,5-Math.round(armSwing*0.5),1,3,'#f0d0b0'); // baton hand
-      ctx.fillStyle='#ccc'; ctx.fillRect(x+8*S,y+(4-armSwing)*S,S*0.5,S*2); // baton
-      px(1,9,2,4,suit,'#000'); px(3,9,2,4,suit,'#000');
-      px(0,12,3,2,'#111','#000'); px(3,12,3,2,'#111','#000');
-    }
-
-  } else if(genre==='electronic'){
-    const isFemale=gender==='female';
-    const skin='#c8d8e8'; const skinHi='#e0eef8'; // cool, slightly blue-tinted
-    const suit='#0a0a2a'; const suitHi='#1a1a4a'; const visor='#00ccff'; const neon='#00f0ff';
-    // helmet / head with visor
-    px(0,0,6,5,suit,'#000'); dot(0,0,6,1,suitHi); // helmet
-    dot(1,1,4,2,visor); dot(1,1,4,1,'#88eeff'); // visor highlight
-    // antenna
-    ctx.fillStyle='#00f0ff'; ctx.fillRect(x+3*S,y-S*2,S*0.6,S*2);
-    ctx.fillStyle=Math.floor(frame/3)%2===0?'#00f0ff':'#fff';
-    ctx.beginPath(); ctx.arc(x+3.3*S,y-S*2,S*0.6,0,Math.PI*2); ctx.fill();
-    // body — techy suit with panel lines
-    px(0,4,6,6,suit,'#000'); dot(0,4,1,6,suitHi); dot(5,4,1,6,suitHi);
-    // chest LED panel
-    dot(1,5,4,3,'#001133');
-    ctx.fillStyle=neon; for(let i=0;i<3;i++) ctx.fillRect(x+(2+i)*S,y+(5+i)*S,S*0.8,S*0.4);
-    // arms with circuit lines
-    px(-1,5+Math.round(armSwing*0.4),1,4,suit,'#000'); dot(-1,6,1,1,neon);
-    px(6,5-Math.round(armSwing*0.4),1,4,suit,'#000'); dot(6,6,1,1,neon);
-    // legs
-    px(1,9,2,4,suit,'#000'); px(3,9,2,4,suit,'#000');
-    dot(1,9,2,1,suitHi); dot(3,9,2,1,suitHi);
-    // boots with glow sole
-    px(0,12,3,2,suit,'#000'); px(3,12,3,2,suit,'#000');
-    dot(0,13,3,1,neon); dot(3,13,3,1,neon);
-
+  // ── TRAINER (grid ~0..12 wide, 0..17 tall) ──
+  // hat or hair
+  if(p.hat){ px(0.6,0.4,5.8,1.8,p.outfit); px(-0.6,2,8.2,1,p.outfit); dot(1,0.4,5,0.6,p.outfitHi); }
+  else if(p.cap){ px(1,0,5,1.8,p.hair); px(0,1.6,7,1,'#222'); dot(1.4,0,4,0.6,p.hairHi); }
+  else { px(0.8,0,5.4,2.4,p.hair); dot(1.2,0,4.6,0.8,p.hairHi);
+    if(isF){ px(0,0.8,1,6,p.hair); px(6,0.8,1,6,p.hair); } }
+  // head
+  px(1.2,2.2,4.6,4.2,skin);
+  // eyes — blink every ~2s; happy squint on win
+  const blink=Math.floor(frame*10)%24>22;
+  if(win){ dot(2.2,3.6,1.2,0.5,'#222'); dot(4.4,3.6,1.2,0.5,'#222'); }
+  else if(blink){ dot(2.2,4,1,0.4,'#222'); dot(4.4,4,1,0.4,'#222'); }
+  else { dot(2.2,3.6,1,1,'#222'); dot(4.4,3.6,1,1,'#222');
+    dot(2.4,3.7,0.4,0.4,'#fff'); dot(4.6,3.7,0.4,0.4,'#fff'); }
+  // mouth — grin on win
+  if(win) dot(2.6,5.4,2.4,0.8,'#a05050'); else dot(3,5.5,1.6,0.5,'#8a4a4a');
+  // torso jacket + shirt
+  px(0.8,6.4,6,5,p.outfit);
+  px(1.8,7,4,2.8,p.shirt); dot(1.8,7,4,0.9,p.shirtHi);
+  dot(0.8,6.4,0.8,5,p.outfitHi); dot(6,6.4,0.8,5,p.outfitHi);
+  // arms
+  if(win){
+    // both arms UP with fists
+    px(-0.8,2.4,1.4,4.6,p.outfit); px(7,2.4,1.4,4.6,p.outfit);
+    dot(-0.8,1.4,1.4,1.2,skin); dot(7,1.4,1.4,1.2,skin);
   } else {
-    // Country — cowboy/cowgirl
-    const isFemale=gender==='female';
-    const skin='#d4956a'; const skinHi='#e8b080';
-    const hat='#7a5a2a'; const hatHi='#9a7a44'; const hatBand='#cc2200';
-    const shirt=isFemale?'#cc4444':'#3a7a3a'; const shirtHi=isFemale?'#ee6666':'#4a9a4a';
-    const jeans='#1a3a6a'; const jeansHi='#2a4a7a'; const boot='#5a3a1a'; const bootToe='#7a5a2a';
-    // cowboy hat — wide brim
-    px(-1,0,8,1,hat,'#5a3a0a'); px(1,1,4,3,hat,'#5a3a0a'); dot(-1,0,8,1,hatHi); dot(1,1,4,1,hatHi);
-    dot(1,2,4,1,hatBand); // hat band
-    // head
-    px(1,3,4,4,skin,'#a06030');
-    dot(2,4,2,1,skinHi);
-    eye(2,4,'#4a2a0a'); eye(4,4,'#4a2a0a');
-    dot(3,5,1,1,'#c07050'); // mouth/smile
-    if(isFemale){ // pigtails
-      px(-1,3,1,3,'#8b4513','#5a2a00'); px(6,3,1,3,'#8b4513','#5a2a00');
-    }
-    // shirt with snap buttons
-    px(0,6,6,5,shirt,'#224422'); dot(0,6,6,1,shirtHi);
-    dot(3,7,1,1,'#fff'); dot(3,8,1,1,'#fff'); dot(3,9,1,1,'#fff'); // snap buttons
-    // arms — one raised with lasso suggestion
-    px(-1,7+Math.round(armSwing*0.4),1,3,shirt,'#224422');
-    px(6,7-Math.round(armSwing*0.5),1,3,skin,'#a06030');
-    // belt + buckle
-    dot(0,10,6,1,hat); dot(2,10,2,1,'#ffd700');
-    // jeans
-    px(1,10,2,5,jeans,'#0a2040'); px(3,10,2,5,jeans,'#0a2040');
-    dot(1,10,2,1,jeansHi); dot(3,10,2,1,jeansHi);
-    // boots with pointed toe
-    px(0,14,3,2,boot,'#3a1a00'); px(3,14,3,2,boot,'#3a1a00');
-    dot(0,14,3,1,bootToe); dot(3,14,3,1,bootToe);
+    // left arm swings; right arm extended forward holding the leash
+    px(-0.8,7+armSwing*0.5,1.4,4,p.outfit);
+    dot(-0.8,10.6+armSwing*0.5,1.4,1,skin);
+    px(7,8.2,2.6,1.3,p.outfit);       // extended arm
+    dot(9.4,8.2,1.2,1.3,skin);        // hand
   }
+  // legs + boots
+  px(1.4,11.4,2.2,4,p.shirt==='#1a1a2e'?'#1a1a2e':'#14141c');
+  px(4,11.4,2.2,4,p.shirt==='#1a1a2e'?'#1a1a2e':'#14141c');
+  px(0.8,15.2,3,1.6,p.boot); px(3.9,15.2,3,1.6,p.boot);
+  dot(0.8,16.2,3,0.6,'#555'); dot(3.9,16.2,3,0.6,'#555');
+
+  // ── COMPANION SNAKE (coiled at trainer's right, grid x ~13..24) ──
+  const snk=window.getActiveSkinColors?window.getActiveSkinColors():null;
+  const g2=(typeof GENRES!=='undefined'&&GENRES[genre])?GENRES[genre]:null;
+  const sb0=snk?snk.body[0]:(g2?g2.snakeCol[0]:'#ff7700');
+  const sb1=snk?snk.body[1]:(g2?(g2.snakeCol[1]||g2.accent2):'#ffaa00');
+  const sh=snk?snk.head:(g2?g2.headCol:'#ffee00');
+  const scx=x+18.5*S, sbase=y+16.4*S;
+  ctx.save();
+  // leash from trainer hand to snake neck (battle only — victory sets it free)
+  if(!win){
+    ctx.strokeStyle='rgba(200,180,140,.75)'; ctx.lineWidth=1.2;
+    ctx.beginPath(); ctx.moveTo(x+10.4*S,y+8.8*S);
+    ctx.quadraticCurveTo(x+13.6*S,y+12*S,scx-2.5*S,sbase-7.5*S);
+    ctx.stroke();
+  }
+  // coils (2) with glow + pulsing core
+  for(let c2=1;c2>=0;c2--){
+    const cy=sbase-c2*3.4*S, rr=(4.6-c2*1.2)*S;
+    ctx.shadowBlur=6; ctx.shadowColor=sb0;
+    ctx.fillStyle=c2%2?sb1:sb0;
+    ctx.beginPath(); ctx.ellipse(scx,cy,rr,1.9*S,0,0,Math.PI*2); ctx.fill();
+    ctx.shadowBlur=0;
+    ctx.fillStyle='rgba(255,255,220,'+(0.25+0.4*Math.pow(Math.max(0,Math.sin(frame*.9-c2*1.4)),3)).toFixed(2)+')';
+    ctx.beginPath(); ctx.ellipse(scx,cy,rr*0.5,0.8*S,0,0,Math.PI*2); ctx.fill();
+  }
+  // neck rising (higher when winning)
+  const sbobb=Math.sin(frame*(win?.9:.6))*1.5;
+  const heady=win?(sbase-12.5*S+sbobb):(sbase-9*S+sbobb);
+  ctx.strokeStyle=sb1; ctx.lineWidth=2.6*S; ctx.lineCap='round';
+  ctx.shadowBlur=6; ctx.shadowColor=sb0;
+  ctx.beginPath(); ctx.moveTo(scx,sbase-3.4*S);
+  ctx.quadraticCurveTo(scx+(win?2.4:3.2)*S,sbase-6.5*S,scx-0.5*S,heady+2*S);
+  ctx.stroke(); ctx.shadowBlur=0;
+  // head with visor + crown fin (matches the board snake)
+  ctx.save(); ctx.translate(scx-0.5*S,heady); ctx.rotate(win?-0.12:0.12);
+  ctx.shadowBlur=8; ctx.shadowColor=sh;
+  ctx.fillStyle=sh; ctx.beginPath();
+  ctx.moveTo(0,-2.6*S); ctx.quadraticCurveTo(2.2*S,-2*S,2*S,0.4*S);
+  ctx.quadraticCurveTo(1.8*S,2*S,0,2.2*S); ctx.quadraticCurveTo(-1.8*S,2*S,-2*S,0.4*S);
+  ctx.quadraticCurveTo(-2.2*S,-2*S,0,-2.6*S); ctx.closePath(); ctx.fill();
+  ctx.shadowBlur=0;
+  // visor + eye bars
+  ctx.fillStyle='#1a0a00'; ctx.fillRect(-1.6*S,-1.2*S,3.2*S,1.4*S);
+  ctx.fillStyle='rgba(120,255,255,'+(0.7+0.3*Math.sin(frame*1.2)).toFixed(2)+')';
+  ctx.fillRect(-1.3*S,-1*S,1.1*S,0.9*S); ctx.fillRect(0.3*S,-1*S,1.1*S,0.9*S);
+  // crown fin
+  ctx.fillStyle='#ffd24a';
+  ctx.beginPath(); ctx.moveTo(-1.3*S,-2.4*S); ctx.lineTo(-0.2*S,-3.8*S); ctx.lineTo(0.7*S,-2.5*S); ctx.closePath(); ctx.fill();
+  // tongue flick
+  if(Math.sin(frame*1.4)>0.4){
+    ctx.strokeStyle='#ee1111'; ctx.lineWidth=1; ctx.lineCap='round';
+    ctx.beginPath(); ctx.moveTo(0,2.2*S); ctx.lineTo(0,3.4*S); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(0,3.4*S); ctx.lineTo(-0.7*S,4*S); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(0,3.4*S); ctx.lineTo(0.7*S,4*S); ctx.stroke();
+  }
+  ctx.restore();
+  // victory star over the snake
+  if(win){
+    ctx.fillStyle='rgba(255,210,74,'+(0.6+0.4*Math.sin(frame*.8)).toFixed(2)+')';
+    ctx.font='bold '+Math.round(5*S)+'px serif'; ctx.textAlign='center';
+    ctx.fillText('\u2b50',scx+3.5*S,heady-3*S); ctx.textAlign='left';
+  }
+  ctx.restore();
 }
 
-
-// ════════════════════════════════════════════════════════════════
-//  METAL BOSSES — 4 distinct characters, escalating to a detailed final boss
-//  Clean, crisp, modern fighting-game silhouette. Shared helper grid (3px cells).
-// ════════════════════════════════════════════════════════════════
-
-// ════════════════════════════════════════════════════════════════
-//  HIP-HOP BOSSES — Hype Man -> DJ -> Producer -> The Mogul (final)
-// ════════════════════════════════════════════════════════════════
 function drawHiphopBoss(ctx,x,y,idx,hpPct,frame,h){
   // ── BIG-HEAD CARTOON REMASTER (owner-picked style C) ──
   //  0 DJ Shadow  1 Beatmaker  2 Lyrical Demon  3 Notorious God
