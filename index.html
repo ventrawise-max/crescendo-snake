@@ -1895,6 +1895,7 @@ window.openHub=function(){
     {icon:'🐍',label:'SKINS',     fn:()=>{ closeHub(); if(window.openStore) window.openStore(); }},
     {icon:'👤',label:'SWITCH PLAYER',fn:()=>{ closeHub(); if(window.openProfilePicker) window.openProfilePicker(); }},
     {icon:'❓',label:'HOW TO PLAY',fn:()=>{ if(window.showHowTo) window.showHowTo(); }},
+    {icon:'🎓',label:'TUTORIAL',  fn:()=>{ if(window.showFirstRunTutorial) window.showFirstRunTutorial(function(){},true); }},
   ];
   // DEV-ONLY: mini-game test arena
   if(typeof isDevMode==='function' && isDevMode()){
@@ -9069,35 +9070,66 @@ function showDailyBanner(){
   document.body.appendChild(b);
   setTimeout(()=>{ try{document.body.removeChild(b);}catch(e){} },3600);
 }
-function showFirstRunTutorial(onDone){
-  if(localStorage.getItem('cs_tutorialSeen')) { onDone(); return; }
+function showFirstRunTutorial(onDone,force){
+  // ── FIRST-RUN TUTORIAL — step cards, indie-joke tone, skippable ──
+  if(!force && localStorage.getItem('cs_tutorialSeen')){ onDone(); return; }
   localStorage.setItem('cs_tutorialSeen','1');
+  const STEPS=[
+    {ic:'🐍',t:"YOU'RE A SNAKE",
+     j:"A rock star snake. No arms, no record deal, unlimited appetite.",
+     r:"Swipe the board or drag the joystick to steer. On a keyboard: arrows or WASD."},
+    {ic:'🔢',t:'THE BIG NUMBER',
+     j:"That giant rolling counter up top? Your score. Watching it go up releases happy brain chemicals. You're welcome.",
+     r:"Every snack = points. Your best score is saved per genre — beat it and the game will let you know. Loudly."},
+    {ic:'🔗',t:'COMBOS',
+     j:"Eat fast and the combo counter climbs. Eat slow and the snake silently judges you.",
+     r:"Chained eats build your combo — and multipliers MULTIPLY together. Hit x5 to trigger FEVER: 3× points while everything is on fire."},
+    {ic:'❤️',t:'LIVES',
+     j:"The hearts at the top. Walls, skulls, and your own butt all want them.",
+     r:"Lose a heart, respawn and keep going. Earn hearts back by scoring — Easy mode hands them out like flyers."},
+    {ic:'🔮',t:'GLOWING ORBS',
+     j:"Gold glow: treats. Cyan glow: powers. Red glow with a skull: famously NOT a snack.",
+     r:"Gold = bonus points, cyan = abilities like ice and scissors, red = instant regret. The glow color is the whole rulebook."},
+    {ic:'⚔️',t:'BOSSES',
+     j:"Every 4 levels a boss shows up to ruin your gig. Rude.",
+     r:"Keep eating fast to drain their HP before the timer runs out. Beat all 4 bosses to clear the genre and unlock the next one."},
+    {ic:'🏆',t:'GET FAMOUS',
+     j:"Coins buy skins and stages. Records go on the WORLD leaderboard — on the title screen, where everyone can see them. Beat your mates. Screenshot it. Be insufferable.",
+     r:"Menu → RECORDS for the boards. Mini-games unlock too — settle 'who has faster thumbs' arguments scientifically."}
+  ];
+  let step=0;
   const ov=document.createElement('div');
-  ov.style.cssText='position:fixed;inset:0;z-index:9995;background:rgba(5,2,8,.94);display:flex;flex-direction:column;align-items:center;justify-content:center;padding:24px;';
-  ov.innerHTML=`
-    <div style="font-family:'Metal Mania','Arial Black',sans-serif;font-size:28px;color:#fff;text-shadow:0 0 16px #ff5500;letter-spacing:.06em;margin-bottom:4px">HOW TO PLAY</div>
-    <div style="font-family:'Teko',sans-serif;font-size:12px;letter-spacing:.2em;color:#666;margin-bottom:20px">SWIPE OR USE ARROW KEYS</div>
-    <div style="display:flex;flex-direction:column;gap:12px;width:100%;max-width:300px;margin-bottom:24px">
-      ${[
-        ['🕹️','MOVE','Swipe on the board or use arrow keys / WASD to steer'],
-        ['🍎','EAT FAST','The faster you eat, the higher your FLOW multiplier builds'],
-        ['🔗','BUILD COMBOS','Chain eats quickly to hit x5 FEVER — 3× points for 8 seconds!'],
-        ['⚔️','FIGHT BOSSES','Bosses appear every 4 levels. Eat fast to drain their HP!'],
-      ].map(([ic,nm,ds])=>`
-        <div style="display:flex;align-items:flex-start;gap:12px;background:rgba(255,255,255,.06);border-radius:9px;padding:10px 14px">
-          <div style="font-size:26px;line-height:1.1">${ic}</div>
-          <div><div style="font-family:'Teko','Arial Black',sans-serif;font-size:16px;color:#fff;letter-spacing:.06em">${nm}</div>
-          <div style="font-family:'Teko',sans-serif;font-size:13px;color:#999;line-height:1.3">${ds}</div></div>
-        </div>`).join('')}
-    </div>
-    <button id="tutorialGo" style="font-family:'Teko','Arial Black',sans-serif;font-weight:700;font-size:20px;letter-spacing:.12em;padding:13px 50px;border:none;border-radius:9px;background:linear-gradient(180deg,#f6d98a,#caa033);color:#3a1500;box-shadow:0 4px 0 #5a3410,0 6px 14px rgba(0,0,0,.5);cursor:pointer;-webkit-tap-highlight-color:transparent">LET'S GO! 🐍</button>
-  `;
-  document.body.appendChild(ov);
-  document.getElementById('tutorialGo').addEventListener('click',()=>{
+  ov.style.cssText='position:fixed;inset:0;z-index:9995;background:rgba(5,2,8,.95);display:flex;flex-direction:column;align-items:center;justify-content:center;padding:24px;';
+  function render(){
+    const s=STEPS[step], last=step===STEPS.length-1;
+    ov.innerHTML=
+      '<div style="width:100%;max-width:320px;background:linear-gradient(170deg,rgba(40,18,10,.95),rgba(14,6,10,.97));border:1px solid rgba(255,140,60,.35);border-radius:16px;padding:26px 22px;text-align:center;box-shadow:0 10px 34px rgba(0,0,0,.6)">'
+      +'<div style="font-size:52px;line-height:1;margin-bottom:10px">'+s.ic+'</div>'
+      +'<div style="font-family:\'Metal Mania\',\'Arial Black\',sans-serif;font-size:24px;color:#fff;text-shadow:0 0 14px #ff5500;letter-spacing:.05em;margin-bottom:10px">'+s.t+'</div>'
+      +'<div style="font-family:\'Teko\',sans-serif;font-size:17px;color:#ffce9a;line-height:1.35;margin-bottom:12px">'+s.j+'</div>'
+      +'<div style="font-family:\'Teko\',sans-serif;font-size:14px;color:#998877;line-height:1.4;border-top:1px solid rgba(255,140,60,.2);padding-top:10px">'+s.r+'</div>'
+      +'</div>'
+      +'<div style="display:flex;gap:7px;margin:16px 0 14px">'
+      +STEPS.map(function(_,i){return '<div style="width:8px;height:8px;border-radius:50%;background:'+(i===step?'#ff8800':'rgba(255,255,255,.18)')+'"></div>';}).join('')
+      +'</div>'
+      +'<button id="tutNext" style="font-family:\'Teko\',\'Arial Black\',sans-serif;font-weight:700;font-size:'+(last?22:18)+'px;letter-spacing:.12em;padding:'+(last?'14px 52px':'11px 44px')+';border:none;border-radius:9px;background:linear-gradient(180deg,#f6d98a,#caa033);color:#3a1500;box-shadow:0 4px 0 #5a3410,0 6px 14px rgba(0,0,0,.5);cursor:pointer;-webkit-tap-highlight-color:transparent">'+(last?"LET'S ROCK 🤘":'NEXT →')+'</button>'
+      +(last?'':'<button id="tutSkip" style="margin-top:12px;font-family:\'Teko\',sans-serif;font-size:13px;letter-spacing:.14em;padding:6px 18px;border:none;border-radius:6px;background:transparent;color:#665544;cursor:pointer;-webkit-tap-highlight-color:transparent">SKIP — I WAS BORN READY</button>');
+    document.getElementById('tutNext').onclick=function(){
+      if(step<STEPS.length-1){ step++; render(); }
+      else close();
+    };
+    const sk=document.getElementById('tutSkip');
+    if(sk) sk.onclick=close;
+  }
+  function close(){
     ov.style.opacity='0'; ov.style.transition='opacity .3s';
-    setTimeout(()=>{ try{document.body.removeChild(ov);}catch(e){} onDone(); },300);
-  });
+    setTimeout(function(){ try{document.body.removeChild(ov);}catch(e){} onDone&&onDone(); },300);
+  }
+  document.body.appendChild(ov);
+  render();
 }
+window.showFirstRunTutorial=showFirstRunTutorial;
+
 function beginLoop(){ hideOv(); var pm=document.getElementById('pauseMenu'); if(pm) pm.classList.remove('show'); if(typeof pmShowPanel==='function') pmShowPanel(null);
   // Apply saved volume preference
   try{ if(musicOn) setVol(userVol()); if(window._sfxBus) window._sfxBus.gain.value=userSFXVol(); }catch(e){}
