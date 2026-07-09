@@ -12595,7 +12595,7 @@ setTimeout(()=>{
         rowsEl.innerHTML='<div style="font-family:\'Teko\',sans-serif;color:#888;text-align:center;padding:20px">Loading world records… 🌍</div>';
         window.fetchGlobalTop(list=>{
           if(!document.body.contains(rowsEl)) return; // modal was closed
-          if(!list){ rowsEl.innerHTML='<div style="font-family:\'Teko\',sans-serif;color:#c66;text-align:center;padding:20px">Couldn\\'t reach the leaderboard.<br>Check your connection and try again.</div>'; return; }
+          if(!list){ rowsEl.innerHTML='<div style="font-family:\'Teko\',sans-serif;color:#c66;text-align:center;padding:20px">Could not reach the leaderboard.<br>Check your connection and try again.</div>'; return; }
           _globalCache=list;
           rowsEl.innerHTML=renderRows(list);
         });
