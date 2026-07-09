@@ -1,50 +1,62 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
   <rect width="512" height="512" rx="96" fill="#0c0304"/>
-  <radialGradient id="glow" cx="50%" cy="45%" r="55%">
-    <stop offset="0%" stop-color="#ff3c00" stop-opacity=".5"/>
-    <stop offset="100%" stop-color="#ff3c00" stop-opacity="0"/>
+  <radialGradient id="glow" cx="50%" cy="46%" r="55%">
+    <stop offset="0%" stop-color="#ff3200" stop-opacity=".38"/>
+    <stop offset="100%" stop-color="#ff3200" stop-opacity="0"/>
   </radialGradient>
-  <circle cx="256" cy="230" r="230" fill="url(#glow)"/>
-  <!-- flared hood -->
-  <path fill="#16240a" d="M256 52c116 0 192 84 184 176-4 50-32 84-64 108l16 24-40-16 8 32-40-24-16 32c-30 12-66 12-96 0l-16-32-40 24 8-32-40 16 16-24c-32-24-60-58-64-108C64 136 140 52 256 52z"/>
-  <!-- head -->
-  <radialGradient id="hg" cx="50%" cy="35%" r="70%">
-    <stop offset="0%" stop-color="#4a6e18"/>
-    <stop offset="55%" stop-color="#2d4a10"/>
-    <stop offset="100%" stop-color="#131f06"/>
-  </radialGradient>
-  <path fill="url(#hg)" stroke="#0a1202" stroke-width="10" d="M256 76c66-2 118 52 124 110 4 50-24 92-64 122-18 14-38 20-60 22-22-2-42-8-60-22-40-30-68-72-64-122 6-58 58-112 124-110z"/>
-  <!-- brows -->
-  <path fill="#0d1604" d="M132 172c36-18 84-10 118 24l-10 22c-32-28-72-34-100-24z"/>
-  <path fill="#0d1604" d="M380 172c-36-18-84-10-118 24l10 22c32-28 72-34 100-24z"/>
-  <!-- eyes -->
-  <g transform="translate(186 232) rotate(-14)">
-    <ellipse rx="44" ry="23" fill="#0a1400"/>
-    <ellipse rx="38" ry="18" fill="#ff7700"/>
-    <ellipse rx="8" ry="17" fill="#000"/>
-    <ellipse cx="-15" cy="-6" rx="8" ry="4" fill="#ffe9b0" opacity=".8"/>
-  </g>
-  <g transform="translate(326 232) rotate(14)">
-    <ellipse rx="44" ry="23" fill="#0a1400"/>
-    <ellipse rx="38" ry="18" fill="#ff7700"/>
-    <ellipse rx="8" ry="17" fill="#000"/>
-    <ellipse cx="15" cy="-6" rx="8" ry="4" fill="#ffe9b0" opacity=".8"/>
-  </g>
-  <!-- maw -->
-  <linearGradient id="maw" x1="0" y1="0" x2="0" y2="1">
-    <stop offset="0%" stop-color="#d81800"/>
-    <stop offset="100%" stop-color="#2a0200"/>
+  <circle cx="256" cy="240" r="235" fill="url(#glow)"/>
+  <!-- flared hood: smooth wide spade -->
+  <linearGradient id="hood" x1="0" y1="0" x2="0" y2="1">
+    <stop offset="0%" stop-color="#1c2410"/>
+    <stop offset="60%" stop-color="#10160a"/>
+    <stop offset="100%" stop-color="#080c04"/>
   </linearGradient>
-  <path fill="url(#maw)" d="M176 306c52 26 108 26 160 0-6 52-40 78-80 86-40-8-74-34-80-86z"/>
-  <!-- fangs -->
-  <path fill="#f4eed8" d="M190 312l30 6-12 60zM322 312l-30 6 12 60zM240 322l18 3-9 28zM272 322l-18 3 9 28z"/>
-  <!-- venom -->
-  <ellipse cx="208" cy="386" rx="8" ry="12" fill="#8cff28" opacity=".85"/>
-  <ellipse cx="304" cy="386" rx="8" ry="12" fill="#8cff28" opacity=".85"/>
-  <!-- crown -->
-  <g transform="rotate(-5 256 60)">
-    <path fill="#ffd24a" stroke="#9a7000" stroke-width="6" d="M186 96l12-52 26 30 32-40 32 40 20-16 10 10 16 28z"/>
-    <rect x="186" y="90" width="148" height="16" fill="#e0a800"/>
-    <circle cx="256" cy="52" r="10" fill="#ff3355"/>
+  <path fill="url(#hood)" stroke="#46561e" stroke-width="10"
+    d="M256 30c136 8 214 118 206 234-7 100-88 162-146 194-38 20-82 20-120 0C138 426 57 364 50 264 42 148 120 38 256 30z"/>
+  <path fill="none" stroke="#6e8232" stroke-opacity=".3" stroke-width="8"
+    d="M206 70Q116 240 226 440M306 70Q396 240 286 440"/>
+  <!-- head wedge -->
+  <linearGradient id="hd" x1="0" y1="0" x2="0" y2="1">
+    <stop offset="0%" stop-color="#3a4c16"/>
+    <stop offset="100%" stop-color="#20300c"/>
+  </linearGradient>
+  <path fill="url(#hd)" stroke="#0a1202" stroke-width="9"
+    d="M256 96c60 0 96 42 96 94 0 42-26 66-50 78h-92c-24-12-50-36-50-78 0-52 36-94 96-94z"/>
+  <!-- angled almond eyes, slit pupils -->
+  <g transform="translate(210 200) rotate(24)">
+    <path fill="#0a1400" d="M-40 0Q0-30 40 0Q0 30 -40 0z"/>
+    <path fill="#ff7000" d="M-33 0Q0-24 33 0Q0 24 -33 0z"/>
+    <ellipse rx="7" ry="21" fill="#000"/>
+    <circle cx="-12" cy="-8" r="5" fill="#ffe9b0" opacity=".75"/>
+  </g>
+  <g transform="translate(302 200) rotate(-24)">
+    <path fill="#0a1400" d="M-40 0Q0-30 40 0Q0 30 -40 0z"/>
+    <path fill="#ff7000" d="M-33 0Q0-24 33 0Q0 24 -33 0z"/>
+    <ellipse rx="7" ry="21" fill="#000"/>
+    <circle cx="12" cy="-8" r="5" fill="#ffe9b0" opacity=".75"/>
+  </g>
+  <!-- nostrils -->
+  <ellipse cx="232" cy="252" rx="8" ry="5" fill="#0a0f02" transform="rotate(-14 232 252)"/>
+  <ellipse cx="280" cy="252" rx="8" ry="5" fill="#0a0f02" transform="rotate(14 280 252)"/>
+  <!-- pale strike gape -->
+  <linearGradient id="maw" x1="0" y1="0" x2="0" y2="1">
+    <stop offset="0%" stop-color="#e9d9cd"/>
+    <stop offset="55%" stop-color="#caa39a"/>
+    <stop offset="100%" stop-color="#8a5a5a"/>
+  </linearGradient>
+  <path fill="url(#maw)" stroke="#1a2408" stroke-width="10"
+    d="M198 278q58 18 116 0q0 92-58 126q-58-34-58-126z"/>
+  <ellipse cx="256" cy="318" rx="30" ry="20" fill="#3a1418"/>
+  <!-- thin curved fangs -->
+  <path fill="#f8f4ea" stroke="#c9bfa8" stroke-width="3"
+    d="M210 284q-7 44 15 76q-6-40 0-72zM302 284q7 44-15 76q6-40 0-72z"/>
+  <!-- forked tongue -->
+  <path fill="none" stroke="#c40f0f" stroke-width="9" stroke-linecap="round" d="M256 344q4 46 4 66"/>
+  <path fill="none" stroke="#c40f0f" stroke-width="6" stroke-linecap="round" d="M260 410q-10 22-22 32M260 410q12 22 24 30"/>
+  <!-- small crown on the skull -->
+  <g transform="translate(256 88)">
+    <path fill="#ffd24a" stroke="#9a7000" stroke-width="4"
+      d="M-42 22l8-38 19 23 15-31 15 31 19-23 8 38z"/>
+    <circle cy="-16" r="8" fill="#ff3355"/>
   </g>
 </svg>
